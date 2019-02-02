@@ -1,0 +1,26 @@
+{
+    "name": "kylekatarnls/multi-tester",
+    "description": "Test your package change inside other packages",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "KyleK",
+            "email": "kylekatarnls@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=5.4",
+        "symfony/yaml": "^4.3@dev"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^4.8.35 || ^5.7 || ^6.0 || ^7.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "MultiTester\\": "./src/MultiTester"
+        }
+    },
+    "bin": ["bin/multi-tester"]
+}

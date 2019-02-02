@@ -1,0 +1,17 @@
+#!/usr/bin/env php
+<?php
+
+use MultiTester\MultiTester;
+
+//Check for autoload file
+$cwd = getcwd();
+$path = "$cwd/vendor/autoload.php";
+
+if (file_exists($path)) {
+    require $path;
+} else {
+    echo "Composer's autoload.php not found in $cwd.";
+    exit(1);
+}
+
+(new MultiTester())->run($argv);
