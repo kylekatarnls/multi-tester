@@ -83,10 +83,15 @@ class MultiTester
         $this->travisSettings = null;
     }
 
+    protected function parseJsonFile($file)
+    {
+        return json_decode(file_get_contents($file), JSON_OBJECT_AS_ARRAY);
+    }
+
     protected function getComposerSettings($package)
     {
         if (!isset($this->composerSettings[$package])) {
-            $this->composerSettings[$package] = json_decode(file_get_contents("https://repo.packagist.org/p/$package.json"), JSON_OBJECT_AS_ARRAY);
+            $this->composerSettings[$package] = $this->parseJsonFile("https://repo.packagist.org/p/$package.json");
             $this->composerSettings[$package] = is_array($this->composerSettings[$package]) && isset($this->composerSettings[$package]['packages'], $this->composerSettings[$package]['packages'][$package])
                 ? $this->composerSettings[$package]['packages'][$package]
                 : null;
@@ -95,46 +100,74 @@ class MultiTester
         return $this->composerSettings[$package];
     }
 
+    protected function copyDirectory($source, $destination, $exceptions = [])
+    {
+        $this->createEmptyDirectory($destination);
+
+        foreach (scandir($source) as $file) {
+            if ($file !== '.' && $file !== '..' && !in_array($file, $exceptions)) {
+                $path = "$source/$file";
+                if (is_dir($path)) {
+                    if (!$this->copyDirectory($path, "$destination/$file")) {
+                        return false;
+                    }
+
+                    continue;
+                }
+
+                if (!copy($path, "$destination/$file")) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
     protected function emptyDirectory($dir)
     {
         if (!is_dir($dir)) {
-            return;
+            return false;
         }
 
         foreach (scandir($dir) as $file) {
             if ($file !== '.' && $file !== '..') {
                 $path = $dir.'/'.$file;
                 if (is_dir($path)) {
-                    static::emptyDirectory($path);
+                    if (!$this->emptyDirectory($path)) {
+                        return false;
+                    }
 
                     continue;
                 }
 
-                unlink($path);
+                if (!unlink($path)) {
+                    return false;
+                }
             }
         }
+
+        return true;
     }
 
     protected function removeDirectory($dir)
     {
         $this->emptyDirectory($dir);
 
-        return @rmdir($dir);
+        return rmdir($dir);
     }
 
     protected function createEmptyDirectory($dir)
     {
-        if (@is_dir($dir)) {
-            $this->emptyDirectory($dir);
-
-            return;
+        if (is_dir($dir)) {
+            return $this->emptyDirectory($dir);
         }
 
-        if (@is_file($dir)) {
-            @unlink($dir);
+        if (is_file($dir)) {
+            unlink($dir);
         }
 
-        return @mkdir($dir, 0777, true);
+        return mkdir($dir, 0777, true);
     }
 
     protected function exec($command)
@@ -199,7 +232,19 @@ class MultiTester
         }
 
         $config = Yaml::parseFile($configFile);
+        $projects = isset($config['projects']) ? $config['projects'] : $config;
+        $config = isset($config['config']) ? $config['config'] : $config;
 
+        $projectDirectory = isset($config['directory']) ? $config['directory'] : dirname(realpath($configFile));
+        $composerFile = $projectDirectory . '/composer.json';
+        if (!file_exists($composerFile)) {
+            $this->error("Set the 'directory' entry to a path containing a composer.json file.");
+        }
+        $data = $this->parseJsonFile($composerFile);
+        if (!is_array($data) || !isset($data['name'])) {
+            $this->error("The composer.json file must contains a 'name' entry.");
+        }
+        $packageName = $data['name'];
         $directory = sys_get_temp_dir() . '/multi-tester-' . mt_rand(0, 9999999);
         $this->workingDirectory = $directory;
 
@@ -207,7 +252,16 @@ class MultiTester
             $this->error('Cannot create temporary directory, check you have write access to ' . sys_get_temp_dir());
         }
 
-        foreach ($config as $package => $settings) {
+        foreach ($projects as $package => $settings) {
+            if ($settings === 'travis') {
+                $settings = [
+                    'script'  => 'travis',
+                    'install' => 'travis',
+                ];
+            }
+            if (!is_array($settings)) {
+                $settings = [];
+            }
             if (!isset($settings['clone'])) {
                 if (!isset($settings['source'])) {
                     if (!isset($settings['version'])) {
@@ -253,6 +307,11 @@ class MultiTester
             $this->clearTravisSettingsCache();
 
             if (!isset($settings['install'])) {
+                echo "No install script found, 'composer install' used by default, add a 'install' entry if you want to customize it.\n";
+                $settings['script'] = 'composer install';
+            }
+
+            if ($settings['install'] === 'travis') {
                 $travisSettings = $this->getTravisSettings();
                 if (isset($travisSettings['install'])) {
                     echo 'Install script found in ' . $this->getTravisFile() . ", add a 'install' entry if you want to customize it.\n";
@@ -260,26 +319,23 @@ class MultiTester
                 }
             }
 
-            if (!isset($settings['install'])) {
-                echo "No install script found, 'composer install' used by default, add a 'install' entry if you want to customize it.\n";
-                $settings['script'] = 'composer install';
-            }
-
             if (!$this->exec($settings['install'])) {
                 $this->error("Installing $package failed.");
             }
 
+            $this->copyDirectory('.', "vendor/$packageName", ['vendor']);
+
             if (!isset($settings['script'])) {
+                echo "No script found, 'vendor/bin/phpunit' used by default, add a 'script' entry if you want to customize it.\n";
+                $settings['script'] = 'vendor/bin/phpunit';
+            }
+
+            if ($settings['script'] === 'travis') {
                 $travisSettings = $this->getTravisSettings();
                 if (isset($travisSettings['script'])) {
                     echo 'Script found in ' . $this->getTravisFile() . ", add a 'script' entry if you want to customize it.\n";
                     $settings['script'] = $travisSettings['script'];
                 }
-            }
-
-            if (!isset($settings['script'])) {
-                echo "No script found, 'vendor/bin/phpunit' used by default, add a 'script' entry if you want to customize it.\n";
-                $settings['script'] = 'vendor/bin/phpunit';
             }
 
             if (!$this->exec($settings['script'])) {
