@@ -223,19 +223,22 @@ class MultiTesterTest extends TestCase
             ['file', $buffer, 'a'],
             $streams[2],
         ]);
-        $result = $exec->invoke($tester, 'echo Bla');
+        $exec->invoke($tester, 'echo Bla');
         $output = file_get_contents($buffer);
         unlink($buffer);
 
-        $this->assertTrue($result);
         $this->assertSame("> echo Bla\nBla", str_replace("\r", '', trim($output)));
 
-        $result = $exec->invoke($tester, ['echo Bla', 'echo Foo']);
+        $exec->invoke($tester, ['echo Bla', 'echo Foo']);
         $output = file_get_contents($buffer);
         unlink($buffer);
 
-        $this->assertTrue($result);
         $this->assertSame("> echo Bla\nBla\n\n> echo Foo\nFoo", str_replace("\r", '', trim($output)));
+
+        $this->assertTrue($exec->invoke($tester, 'echo "<?php exit(0); ?>" | php'));
+        $this->assertFalse($exec->invoke($tester, 'echo "<?php exit(1); ?>" | php'));
+
+        @unlink($buffer);
     }
 
     /**
