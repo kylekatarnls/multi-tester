@@ -1,15 +1,14 @@
 <phpunit
-        bootstrap="tests/lib/bootstrap.php"
+        bootstrap="vendor/autoload.php"
         backupGlobals="false"
         colors="true"
         convertErrorsToExceptions="true"
         convertNoticesToExceptions="true"
         convertWarningsToExceptions="true"
-        strict="true"
 >
     <testsuites>
         <testsuite name="Test">
-            <directory suffix=".php">tests/</directory>
+            <directory suffix="Test.php">tests/</directory>
         </testsuite>
     </testsuites>
     <filter>

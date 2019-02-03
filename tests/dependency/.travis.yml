@@ -1,0 +1,5 @@
+install: echo "Install"
+
+script:
+  - echo "Bla"
+  - echo '<?php echo 3 + 4; ?>' | php

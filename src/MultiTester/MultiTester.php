@@ -27,9 +27,18 @@ class MultiTester
     protected $travisSettings = null;
 
     /**
-     * @var array Temporary working directory
+     * @var string Temporary working directory.
      */
     protected $workingDirectory = null;
+
+    /**
+     * @var array Stream settings for command execution.
+     */
+    protected $procStreams = [
+        ['file', 'php://stdin', 'r'],
+        ['file', 'php://stdout', 'w'],
+        ['file', 'php://stderr', 'w'],
+    ];
 
     /**
      * @return string
@@ -64,7 +73,7 @@ class MultiTester
     }
 
     /**
-     * @return array
+     * @return string
      */
     public function getWorkingDirectory()
     {
@@ -72,11 +81,42 @@ class MultiTester
     }
 
     /**
-     * @param array $workingDirectory
+     * @param string $workingDirectory
      */
     public function setWorkingDirectory($workingDirectory)
     {
         $this->workingDirectory = $workingDirectory;
+    }
+
+    /**
+     * @return array
+     */
+    public function getProcStreams()
+    {
+        return $this->procStreams;
+    }
+
+    /**
+     * @param array $procStreams
+     */
+    public function setProcStreams($procStreams)
+    {
+        $this->procStreams = $procStreams;
+    }
+
+    protected function output($text)
+    {
+        $streams = $this->getProcStreams();
+        $stdout = is_array($streams) && isset($streams[1]) ? $streams[1] : null;
+        if (is_array($stdout) && $stdout[0] === 'file') {
+            $file = fopen($stdout[1], $stdout[2]);
+            fwrite($file, $text);
+            fclose($file);
+
+            return;
+        }
+
+        echo $text;
     }
 
     protected function getTravisSettings()
@@ -154,9 +194,9 @@ class MultiTester
 
         foreach (@scandir($dir) as $file) {
             if ($file !== '.' && $file !== '..') {
-                $path = $dir.'/'.$file;
+                $path = $dir . '/' . $file;
                 if (@is_dir($path)) {
-                    if (!$this->emptyDirectory($path)) {
+                    if (!$this->emptyDirectory($path) || !@rmdir($path)) {
                         $success = false;
                     }
 
@@ -176,7 +216,7 @@ class MultiTester
     {
         $this->emptyDirectory($dir);
 
-        return rmdir($dir);
+        return @rmdir($dir);
     }
 
     protected function createEmptyDirectory($dir)
@@ -206,18 +246,12 @@ class MultiTester
 
         $command = trim(preg_replace('/^\s*travis_retry\s/', '', $command));
 
-        echo "> $command\n";
-
-        while (@ob_end_flush());
+        $this->output("> $command\n");
 
         $pipes = [];
-        $process = proc_open($command, [
-            ['file', 'php://stdin', 'r'],
-            ['file', 'php://stdout', 'w'],
-            ['file', 'php://stderr', 'w'],
-        ], $pipes);
+        $process = proc_open($command, $this->getProcStreams(), $pipes);
         if (!is_resource($process)) {
-            return false;
+            return false; // @codeCoverageIgnore
         }
 
         $status = proc_get_status($process);
@@ -226,7 +260,7 @@ class MultiTester
             $status = proc_get_status($process);
         }
 
-        echo "\n";
+        $this->output("\n");
 
         return proc_close($process) === 0;
     }
@@ -272,7 +306,7 @@ class MultiTester
 
             if ($settings === 'travis') {
                 $settings = [
-                    'script'  => 'travis',
+                    'script' => 'travis',
                     'install' => 'travis',
                 ];
             }
@@ -328,14 +362,14 @@ class MultiTester
             $this->clearTravisSettingsCache();
 
             if (!isset($settings['install'])) {
-                echo "No install script found, 'composer install --no-interaction' used by default, add a 'install' entry if you want to customize it.\n";
+                $this->output("No install script found, 'composer install --no-interaction' used by default, add a 'install' entry if you want to customize it.\n");
                 $settings['install'] = 'composer install --no-interaction';
             }
 
             if ($settings['install'] === 'travis') {
                 $travisSettings = $this->getTravisSettings();
                 if (isset($travisSettings['install'])) {
-                    echo 'Install script found in ' . $this->getTravisFile() . ", add a 'install' entry if you want to customize it.\n";
+                    $this->output('Install script found in ' . $this->getTravisFile() . ", add a 'install' entry if you want to customize it.\n");
                     $settings['install'] = $travisSettings['install'];
                 }
             }
@@ -347,14 +381,14 @@ class MultiTester
             $this->copyDirectory($projectDirectory, "vendor/$packageName", ['.git', 'vendor']);
 
             if (!isset($settings['script'])) {
-                echo "No script found, 'vendor/bin/phpunit --no-coverage' used by default, add a 'script' entry if you want to customize it.\n";
+                $this->output("No script found, 'vendor/bin/phpunit --no-coverage' used by default, add a 'script' entry if you want to customize it.\n");
                 $settings['script'] = 'vendor/bin/phpunit --no-coverage';
             }
 
             if ($settings['script'] === 'travis') {
                 $travisSettings = $this->getTravisSettings();
                 if (isset($travisSettings['script'])) {
-                    echo 'Script found in ' . $this->getTravisFile() . ", add a 'script' entry if you want to customize it.\n";
+                    $this->output('Script found in ' . $this->getTravisFile() . ", add a 'script' entry if you want to customize it.\n");
                     $settings['script'] = $travisSettings['script'];
                 }
             }
