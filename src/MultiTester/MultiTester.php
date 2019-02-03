@@ -268,6 +268,7 @@ class MultiTester
     protected function error($message)
     {
         $this->removeDirectory($this->getWorkingDirectory());
+
         throw new MultiTesterException($message);
     }
 
