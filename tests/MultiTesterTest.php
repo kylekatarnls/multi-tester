@@ -102,12 +102,12 @@ class MultiTesterTest extends TestCase
 
         $packages = $method->invoke($tester, 'pug-php/pug');
 
-        $this->assertIsArray($packages);
+        $this->assertTrue(is_array($packages));
         $this->assertArrayHasKey('3.2.0', $packages);
 
         $package = $packages['3.2.0'];
 
-        $this->assertIsArray($package);
+        $this->assertTrue(is_array($package));
         $this->assertArrayHasKey('name', $package);
         $this->assertArrayHasKey('version', $package);
         $this->assertSame('pug-php/pug', $package['name']);
