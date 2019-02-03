@@ -307,7 +307,7 @@ class MultiTester
 
             if ($settings === 'travis') {
                 $settings = [
-                    'script' => 'travis',
+                    'script'  => 'travis',
                     'install' => 'travis',
                 ];
             }
