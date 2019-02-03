@@ -45,8 +45,14 @@ class MultiTesterTest extends TestCase
         $method = new ReflectionMethod($tester, 'getTravisSettings');
         $method->setAccessible(true);
 
+        $clearMethod = new ReflectionMethod($tester, 'clearTravisSettingsCache');
+        $clearMethod->setAccessible(true);
+
+        $tester->setTravisFile(__DIR__ . '/dependency/.i-do-not-exist.yml');
+
         $this->assertSame([], $method->invoke($tester));
 
+        $clearMethod->invoke($tester);
         $tester->setTravisFile(__DIR__ . '/dependency/.travis.yml');
 
         $this->assertSame([
@@ -67,8 +73,6 @@ class MultiTesterTest extends TestCase
             ],
         ], $method->invoke($tester));
 
-        $clearMethod = new ReflectionMethod($tester, 'clearTravisSettingsCache');
-        $clearMethod->setAccessible(true);
         $clearMethod->invoke($tester);
 
         $this->assertSame([

@@ -124,7 +124,7 @@ class MultiTester
         if (!$this->travisSettings) {
             $travisFile = $this->getTravisFile();
             if (file_exists($travisFile)) {
-                $this->travisSettings = Yaml::parseFile($travisFile);
+                $this->travisSettings = $this->parseYamlFile($travisFile);
             }
             if (!$this->travisSettings) {
                 $this->travisSettings = [];
@@ -137,6 +137,11 @@ class MultiTester
     protected function clearTravisSettingsCache()
     {
         $this->travisSettings = null;
+    }
+
+    protected function parseYamlFile($file)
+    {
+        return Yaml::parse(file_get_contents($file));
     }
 
     protected function parseJsonFile($file)
@@ -280,7 +285,7 @@ class MultiTester
             $this->error("Multi-tester config file '$configFile' not found.");
         }
 
-        $config = Yaml::parseFile($configFile);
+        $config = $this->parseYamlFile($configFile);
         $projects = isset($config['projects']) ? $config['projects'] : $config;
         $config = isset($config['config']) ? $config['config'] : $config;
 
