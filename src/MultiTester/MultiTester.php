@@ -267,7 +267,7 @@ class MultiTester
 
         $this->output("\n");
 
-        return proc_close($process) === 0;
+        return proc_close($process) === 0 || $status['exitcode'] === 0;
     }
 
     protected function error($message)
