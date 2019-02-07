@@ -61,7 +61,7 @@ class MultiTesterTest extends TestCase
                 'echo "Bla"',
                 'echo \'<?php echo 3 + 4; ?>\' | php',
             ],
-        ], $method->invoke($tester));
+        ], $method->invoke($tester)->toArray());
 
         $tester->setTravisFile(__DIR__ . '/dependency/.travis-other.yml');
 
@@ -71,28 +71,14 @@ class MultiTesterTest extends TestCase
                 'echo "Bla"',
                 'echo \'<?php echo 3 + 4; ?>\' | php',
             ],
-        ], $method->invoke($tester));
+        ], $method->invoke($tester)->toArray());
 
         $clearMethod->invoke($tester);
 
         $this->assertSame([
             'install' => 'echo "Install"',
             'script'  => 'echo "Else"',
-        ], $method->invoke($tester));
-    }
-
-    /**
-     * @throws \ReflectionException
-     */
-    public function testParseJsonFile()
-    {
-        $tester = new MultiTester();
-        $method = new ReflectionMethod($tester, 'parseJsonFile');
-        $method->setAccessible(true);
-
-        $this->assertSame([
-            'name' => 'my-org/my-project',
-        ], $method->invoke($tester, __DIR__ . '/project/composer.json'));
+        ], $method->invoke($tester)->toArray());
     }
 
     /**
@@ -118,79 +104,6 @@ class MultiTesterTest extends TestCase
         $this->assertSame('3.2.0', $package['version']);
 
         $this->assertNull($method->invoke($tester, 'pug-php/i-will-never-exist'));
-    }
-
-    /**
-     * @throws \ReflectionException
-     */
-    public function testDirectoryTools()
-    {
-        $tester = new MultiTester();
-        $copy = new ReflectionMethod($tester, 'copyDirectory');
-        $copy->setAccessible(true);
-        $empty = new ReflectionMethod($tester, 'emptyDirectory');
-        $empty->setAccessible(true);
-        $remove = new ReflectionMethod($tester, 'removeDirectory');
-        $remove->setAccessible(true);
-        $create = new ReflectionMethod($tester, 'createEmptyDirectory');
-        $create->setAccessible(true);
-
-        $testDirectory = sys_get_temp_dir() . '/test-' . mt_rand(0, 999999);
-        @mkdir($testDirectory, 0777, true);
-
-        $this->assertTrue($copy->invoke($tester, __DIR__ . '/dependency/vendor', "$testDirectory/dest", ['bin']));
-
-        $this->assertFileExists("$testDirectory/dest/my-org/my-project/readme.md");
-        $this->assertFileNotExists("$testDirectory/dest/bin/program");
-
-        $this->assertTrue($empty->invoke($tester, "$testDirectory/dest"));
-
-        $this->assertFileNotExists("$testDirectory/dest/my-org/my-project/readme.md");
-        $this->assertFileExists("$testDirectory/dest");
-
-        $this->assertTrue($remove->invoke($tester, "$testDirectory/dest"));
-
-        $this->assertFileNotExists("$testDirectory/dest/my-org/my-project/readme.md");
-        $this->assertFileNotExists("$testDirectory/dest");
-
-        $this->assertTrue($create->invoke($tester, "$testDirectory/dest/foo"));
-
-        $this->assertFileExists("$testDirectory/dest/foo");
-
-        touch("$testDirectory/dest/foo/bar");
-
-        $this->assertFalse($empty->invoke($tester, "$testDirectory/dest/foo/bar"));
-
-        $this->assertFileExists("$testDirectory/dest/foo/bar");
-
-        $this->assertTrue($create->invoke($tester, "$testDirectory/dest/foo"));
-
-        $this->assertFileNotExists("$testDirectory/dest/foo/bar");
-
-        touch("$testDirectory/dest/foo/bar");
-
-        $this->assertTrue(is_file("$testDirectory/dest/foo/bar"));
-
-        $this->assertTrue($create->invoke($tester, "$testDirectory/dest/foo/bar"));
-
-        $this->assertTrue(is_dir("$testDirectory/dest/foo/bar"));
-
-        touch("$testDirectory/dest/foo/bar/biz");
-
-        $this->assertTrue($remove->invoke($tester, "$testDirectory/dest"));
-
-        $this->assertFileNotExists("$testDirectory/dest");
-
-        mkdir("$testDirectory/dest/foo/bar/biz", 0777, true);
-        touch("$testDirectory/dest/foo/bar/biz/bla");
-        include_once __DIR__ . '/Failure.php';
-        $failure = new Failure();
-        $this->assertFalse($failure->failCopy("$testDirectory/dest/foo/bar", "$testDirectory/dest/other"));
-        $this->assertFalse($failure->failEmpty("$testDirectory/dest/foo/bar"));
-
-        $this->assertTrue($remove->invoke($tester, $testDirectory));
-
-        $this->assertFileNotExists($testDirectory);
     }
 
     /**

@@ -2,35 +2,25 @@
 
 namespace MultiTester\Tests;
 
-use MultiTester\MultiTester;
+use MultiTester\Directory;
 
-class Failure extends MultiTester
+class Failure extends Directory
 {
-    protected function copyDirectory($source, $destination, $exceptions = [])
+    public function copy($destination, $exceptions = [])
     {
-        if (substr($source, -3) === 'biz') {
+        if (substr($this->path, -3) === 'biz') {
             return false;
         }
 
-        return parent::copyDirectory($source, $destination, $exceptions);
+        return parent::copy($destination, $exceptions);
     }
 
-    protected function emptyDirectory($dir)
+    public function clean()
     {
-        if (substr($dir, -3) === 'biz') {
+        if (substr($this->path, -3) === 'biz') {
             return false;
         }
 
-        return parent::emptyDirectory($dir);
-    }
-
-    public function failEmpty($dir)
-    {
-        return $this->emptyDirectory($dir);
-    }
-
-    public function failCopy($source, $destination, $exceptions = [])
-    {
-        return $this->copyDirectory($source, $destination, $exceptions);
+        return parent::clean();
     }
 }

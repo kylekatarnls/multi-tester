@@ -10,12 +10,12 @@ class Config
     public $configFile;
 
     /**
-     * @var array
+     * @var array|File
      */
     public $config;
 
     /**
-     * @var array
+     * @var array|File
      */
     public $projects;
 
@@ -30,7 +30,7 @@ class Config
     public $composerFile;
 
     /**
-     * @var array
+     * @var array|File
      */
     public $data;
 
@@ -64,7 +64,7 @@ class Config
             throw new MultiTesterException("Multi-tester config file '$configFile' not found.");
         }
 
-        $config = $multiTester->parseYamlFile($configFile);
+        $config = new File($configFile);
         $projects = isset($config['projects']) ? $config['projects'] : $config;
         $config = isset($config['config']) ? $config['config'] : $config;
 
@@ -76,8 +76,8 @@ class Config
         if (!file_exists($composerFile)) {
             throw new MultiTesterException("Set the 'directory' entry to a path containing a composer.json file.");
         }
-        $data = $multiTester->parseJsonFile($composerFile);
-        if (!is_array($data) || !isset($data['name'])) {
+        $data = new File($composerFile);
+        if (!isset($data['name'])) {
             throw new MultiTesterException("The composer.json file must contains a 'name' entry.");
         }
         $packageName = $data['name'];

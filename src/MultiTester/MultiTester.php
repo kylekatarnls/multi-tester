@@ -2,8 +2,6 @@
 
 namespace MultiTester;
 
-use Symfony\Component\Yaml\Yaml;
-
 class MultiTester
 {
     /**
@@ -17,12 +15,12 @@ class MultiTester
     protected $travisFile = '.travis.yml';
 
     /**
-     * @var array Composer package settings cache.
+     * @var array|File Composer package settings cache.
      */
     protected $composerSettings = [];
 
     /**
-     * @var array Travis settings cache.
+     * @var array|File|null Travis settings cache.
      */
     protected $travisSettings = null;
 
@@ -130,16 +128,6 @@ class MultiTester
         $this->verbose = $verbose;
     }
 
-    public function parseYamlFile($file)
-    {
-        return Yaml::parse(file_get_contents($file));
-    }
-
-    public function parseJsonFile($file)
-    {
-        return @json_decode(file_get_contents($file), JSON_OBJECT_AS_ARRAY);
-    }
-
     public function run(array $arguments)
     {
         try {
@@ -159,7 +147,7 @@ class MultiTester
             $directory = $this->getWorkingDirectory();
             $directories[] = $directory;
 
-            if (!$this->createEmptyDirectory($directory)) {
+            if (!(new Directory($directory))->create()) {
                 $this->error('Cannot create temporary directory, check you have write access to ' . sys_get_temp_dir());
             }
 
@@ -217,7 +205,7 @@ class MultiTester
                 $settings['clone'] = [$settings['clone']];
             }
 
-            $this->emptyDirectory('.');
+            (new Directory('.'))->clean();
             $this->info("empty directory: $directory\n");
 
             if (!$this->exec($settings['clone'])) {
@@ -244,7 +232,7 @@ class MultiTester
                 $this->error("Installing $package failed.");
             }
 
-            $this->copyDirectory($config->projectDirectory, 'vendor/' . $config->packageName, ['.git', 'vendor']);
+            (new Directory($config->projectDirectory))->copy('vendor/' . $config->packageName, ['.git', 'vendor']);
 
             if (!isset($settings['script'])) {
                 $this->output("No script found, 'vendor/bin/phpunit --no-coverage' used by default, add a 'script' entry if you want to customize it.\n");
@@ -270,11 +258,11 @@ class MultiTester
 
             chdir($cwd);
 
-            $this->removeDirectory($this->getWorkingDirectory());
+            (new Directory($this->getWorkingDirectory()))->remove();
         }
 
         foreach ($directories as $directory) {
-            $this->removeDirectory($directory);
+            (new Directory($directory))->remove();
         }
     }
 
@@ -305,7 +293,7 @@ class MultiTester
         if (!$this->travisSettings) {
             $travisFile = $this->getTravisFile();
             if (file_exists($travisFile)) {
-                $this->travisSettings = $this->parseYamlFile($travisFile);
+                $this->travisSettings = new File($travisFile);
             }
             if (!$this->travisSettings) {
                 $this->travisSettings = [];
@@ -323,8 +311,8 @@ class MultiTester
     protected function getComposerSettings($package)
     {
         if (!isset($this->composerSettings[$package])) {
-            $this->composerSettings[$package] = $this->parseJsonFile("https://repo.packagist.org/p/$package.json");
-            $this->composerSettings[$package] = is_array($this->composerSettings[$package]) && isset($this->composerSettings[$package]['packages'], $this->composerSettings[$package]['packages'][$package])
+            $this->composerSettings[$package] = new File("https://repo.packagist.org/p/$package.json");
+            $this->composerSettings[$package] = isset($this->composerSettings[$package]['packages'], $this->composerSettings[$package]['packages'][$package])
                 ? $this->composerSettings[$package]['packages'][$package]
                 : null;
         }
@@ -332,94 +320,8 @@ class MultiTester
         return $this->composerSettings[$package];
     }
 
-    protected function copyDirectory($source, $destination, $exceptions = [])
+    protected function execCommand($command)
     {
-        $this->createEmptyDirectory($destination);
-        $success = true;
-
-        foreach (@scandir($source) as $file) {
-            if ($file !== '.' && $file !== '..' && !in_array($file, $exceptions)) {
-                $path = "$source/$file";
-                if (@is_dir($path)) {
-                    if (!$this->copyDirectory($path, "$destination/$file")) {
-                        $success = false;
-                    }
-
-                    continue;
-                }
-
-                if (!@copy($path, "$destination/$file")) {
-                    $success = false;
-                }
-            }
-        }
-
-        return $success;
-    }
-
-    protected function emptyDirectory($dir)
-    {
-        if (!@is_dir($dir)) {
-            return false;
-        }
-
-        clearstatcache();
-        $arg = escapeshellarg($dir);
-        shell_exec('rm -rf ' . $arg . '/.* 2>&1 && rm -rf ' . $arg . '/* 2>&1');
-        $success = true;
-
-        foreach (@scandir($dir) as $file) {
-            if ($file !== '.' && $file !== '..') {
-                $path = $dir . '/' . $file;
-                if (@is_dir($path)) {
-                    if (!$this->emptyDirectory($path) || !@rmdir($path)) {
-                        $success = false;
-                    }
-
-                    continue;
-                }
-
-                if (!@unlink($path)) {
-                    $success = false;
-                }
-            }
-        }
-
-        return $success;
-    }
-
-    protected function removeDirectory($dir)
-    {
-        $this->emptyDirectory($dir);
-
-        return @rmdir($dir);
-    }
-
-    protected function createEmptyDirectory($dir)
-    {
-        if (@is_dir($dir)) {
-            return $this->emptyDirectory($dir);
-        }
-
-        if (@is_file($dir)) {
-            @unlink($dir);
-        }
-
-        return @mkdir($dir, 0777, true);
-    }
-
-    protected function exec($command)
-    {
-        if (is_array($command)) {
-            foreach ($command as $item) {
-                if (!$this->exec($item)) {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
         $command = trim(preg_replace('/^\s*travis_retry\s/', '', $command));
 
         $this->output("> $command\n");
@@ -445,9 +347,24 @@ class MultiTester
         return proc_close($process) === 0 || $status['exitcode'] === 0;
     }
 
+    protected function exec($command)
+    {
+        if (is_array($command)) {
+            foreach ($command as $item) {
+                if (!$this->execCommand($item)) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        return $this->execCommand($command);
+    }
+
     protected function error($message)
     {
-        $this->removeDirectory($this->getWorkingDirectory());
+        (new Directory($this->getWorkingDirectory()))->remove();
 
         throw $message instanceof MultiTesterException ?
             new MultiTesterException($message->getMessage(), $message) :
