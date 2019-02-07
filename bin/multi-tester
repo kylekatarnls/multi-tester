@@ -3,6 +3,8 @@
 
 use MultiTester\MultiTester;
 
+set_time_limit(-1);
+
 //Check for autoload file
 $cwd = getcwd();
 $path = "$cwd/vendor/autoload.php";
