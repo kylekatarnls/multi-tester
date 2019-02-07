@@ -150,9 +150,10 @@ class MultiTester
 
         $this->setVerbose($config->verbose);
         $directories = [];
+        $cwd = getcwd();
 
         foreach ($config->projects as $package => $settings) {
-            $directory = sys_get_temp_dir() . '/multi-tester-' . mt_rand(0, 9999999);
+            $directory = $cwd . '/multi-tester-' . mt_rand(0, 9999999);
             $this->info("working directory: $directory\n");
             $this->setWorkingDirectory($directory);
             $directory = $this->getWorkingDirectory();
@@ -163,7 +164,6 @@ class MultiTester
             }
 
             $pwd = shell_exec('pwd');
-            $cwd = getcwd();
 
             if (!chdir($directory)) {
                 $this->error("Cannot enter $directory");
