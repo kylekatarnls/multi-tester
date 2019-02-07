@@ -138,6 +138,7 @@ class MultiTester
 
         $this->setVerbose($config->verbose);
         $directories = [];
+        $pwd = shell_exec('pwd');
         $cwd = getcwd();
 
         foreach ($config->projects as $package => $settings) {
@@ -150,8 +151,6 @@ class MultiTester
             if (!(new Directory($directory))->create()) {
                 $this->error('Cannot create temporary directory, check you have write access to ' . sys_get_temp_dir());
             }
-
-            $pwd = shell_exec('pwd');
 
             if (!chdir($directory)) {
                 $this->error("Cannot enter $directory");
