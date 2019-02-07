@@ -17,10 +17,16 @@ class Directory
     public function copy($destination, $exceptions = [])
     {
         $source = $this->path;
+        $files = @scandir($source);
+
+        if (!is_array($files)) {
+            return false;
+        }
+
         (new static($destination))->create();
         $success = true;
 
-        foreach (@scandir($source) as $file) {
+        foreach ($files as $file) {
             if ($file !== '.' && $file !== '..' && !in_array($file, $exceptions)) {
                 $path = "$source/$file";
                 if (@is_dir($path)) {

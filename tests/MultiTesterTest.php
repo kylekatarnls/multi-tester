@@ -127,6 +127,38 @@ class MultiTesterTest extends TestCase
     /**
      * @throws \ReflectionException
      */
+    public function testInfo()
+    {
+        $tester = new MultiTester();
+        $info = new ReflectionMethod($tester, 'info');
+        $info->setAccessible(true);
+
+        $this->assertFalse($tester->isVerbose());
+
+        $tester->setProcStreams([]);
+        ob_start();
+        $info->invoke($tester, 'Hello world!');
+        $result = ob_get_contents();
+        ob_end_clean();
+
+        $this->assertSame('', $result);
+
+        $tester->setVerbose(true);
+
+        $this->assertTrue($tester->isVerbose());
+
+        $tester->setProcStreams([]);
+        ob_start();
+        $info->invoke($tester, 'Hello world!');
+        $result = ob_get_contents();
+        ob_end_clean();
+
+        $this->assertSame('Hello world!', $result);
+    }
+
+    /**
+     * @throws \ReflectionException
+     */
     public function testExec()
     {
         $tester = new MultiTester();
@@ -180,5 +212,17 @@ class MultiTesterTest extends TestCase
 
         $this->assertFileNotExists($directory);
         $this->assertSame('Fail', $message);
+
+        mkdir($directory, 0777, true);
+        $message = null;
+
+        try {
+            $error->invoke($tester, new MultiTesterException('Failure'));
+        } catch (MultiTesterException $exception) {
+            $message = $exception->getMessage();
+        }
+
+        $this->assertFileNotExists($directory);
+        $this->assertSame('Failure', $message);
     }
 }

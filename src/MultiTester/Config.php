@@ -54,41 +54,32 @@ class Config
      */
     public function __construct(MultiTester $multiTester, array $arguments)
     {
-        $verbose = in_array('--verbose', $arguments) || in_array('-v', $arguments);
+        $this->verbose = in_array('--verbose', $arguments) || in_array('-v', $arguments);
         $arguments = array_filter($arguments, function ($argument) {
             return $argument !== '--verbose' && $argument !== '-v';
         });
-        $configFile = isset($arguments[1]) ? $arguments[1] : $multiTester->getMultiTesterFile();
+        $this->configFile = isset($arguments[1]) ? $arguments[1] : $multiTester->getMultiTesterFile();
 
-        if (!file_exists($configFile)) {
-            throw new MultiTesterException("Multi-tester config file '$configFile' not found.");
+        if (!file_exists($this->configFile)) {
+            throw new MultiTesterException("Multi-tester config file '$this->configFile' not found.");
         }
 
-        $config = new File($configFile);
-        $projects = isset($config['projects']) ? $config['projects'] : $config;
-        $config = isset($config['config']) ? $config['config'] : $config;
+        $this->config = new File($this->configFile);
+        $this->projects = isset($this->config['projects']) ? $this->config['projects'] : $this->config;
+        $this->config = isset($this->config['config']) ? $this->config['config'] : $this->config;
 
-        $base = dirname(realpath($configFile));
-        $projectDirectory = isset($config['directory'])
-            ? rtrim($base, '/\\') . DIRECTORY_SEPARATOR . ltrim($config['directory'], '/\\')
+        $base = dirname(realpath($this->configFile));
+        $this->projectDirectory = isset($this->config['directory'])
+            ? rtrim($base, '/\\') . DIRECTORY_SEPARATOR . ltrim($this->config['directory'], '/\\')
             : $base;
-        $composerFile = $projectDirectory . '/composer.json';
-        if (!file_exists($composerFile)) {
+        $this->composerFile = $this->projectDirectory . '/composer.json';
+        if (!file_exists($this->composerFile)) {
             throw new MultiTesterException("Set the 'directory' entry to a path containing a composer.json file.");
         }
-        $data = new File($composerFile);
-        if (!isset($data['name'])) {
+        $this->data = new File($this->composerFile);
+        if (!isset($this->data['name'])) {
             throw new MultiTesterException("The composer.json file must contains a 'name' entry.");
         }
-        $packageName = $data['name'];
-
-        $this->configFile = $configFile;
-        $this->config = $config;
-        $this->projects = $projects;
-        $this->projectDirectory = $projectDirectory;
-        $this->composerFile = $composerFile;
-        $this->data = $data;
-        $this->packageName = $packageName;
-        $this->verbose = $verbose;
+        $this->packageName = $this->data['name'];
     }
 }

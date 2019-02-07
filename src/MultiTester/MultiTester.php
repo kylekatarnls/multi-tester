@@ -156,7 +156,11 @@ class MultiTester
                 $this->error("Cannot enter $directory");
             }
 
-            $this->forceDirectoryChange = $pwd === shell_exec('pwd');
+            if (!$this->forceDirectoryChange && $pwd === shell_exec('pwd')) {
+                $this->forceDirectoryChange = true;
+                $this->info("Directory lock detected.\n");
+                $this->exec('pwd');
+            }
 
             if ($settings === 'travis') {
                 $settings = [
@@ -329,7 +333,8 @@ class MultiTester
         $process = proc_open(
             ($this->forceDirectoryChange ? 'cd ' . escapeshellarg($this->getWorkingDirectory()) . ' && ' : '') . $command,
             $this->getProcStreams(),
-            $pipes
+            $pipes,
+            $this->getWorkingDirectory()
         );
         if (!is_resource($process)) {
             return false; // @codeCoverageIgnore
@@ -346,19 +351,22 @@ class MultiTester
         return proc_close($process) === 0 || $status['exitcode'] === 0;
     }
 
-    protected function exec($command)
+    protected function execCommands($commands)
     {
-        if (is_array($command)) {
-            foreach ($command as $item) {
-                if (!$this->execCommand($item)) {
-                    return false;
-                }
+        foreach ($commands as $command) {
+            if (!$this->execCommand($command)) {
+                return false;
             }
-
-            return true;
         }
 
-        return $this->execCommand($command);
+        return true;
+    }
+
+    protected function exec($command)
+    {
+        return is_array($command)
+            ? $this->execCommands($command)
+            : $this->execCommand($command);
     }
 
     protected function error($message)
@@ -366,7 +374,7 @@ class MultiTester
         (new Directory($this->getWorkingDirectory()))->remove();
 
         throw $message instanceof MultiTesterException ?
-            new MultiTesterException($message->getMessage(), $message) :
+            new MultiTesterException($message->getMessage(), 0, $message) :
             new MultiTesterException($message);
     }
 }
