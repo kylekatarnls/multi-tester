@@ -37,6 +37,11 @@ class MultiTester
     protected $verbose = false;
 
     /**
+     * @var bool force directory change for commands execution.
+     */
+    protected $forceDirectoryChange = false;
+
+    /**
      * @var array Stream settings for command execution.
      */
     protected $procStreams = [
@@ -156,33 +161,14 @@ class MultiTester
                 $this->error('Cannot create temporary directory, check you have write access to ' . sys_get_temp_dir());
             }
 
+            $pwd = shell_exec('pwd');
             $cwd = getcwd();
 
             if (!chdir($this->getWorkingDirectory())) {
-                $this->info('Cannot enter '.$directory);
-
-                $directory = $cwd . '/multi-tester-' . mt_rand(0, 9999999);
-                $this->info("working directory: $directory\n");
-                $this->setWorkingDirectory($directory);
-                $directories[] = $directory;
-
-                if (!$this->createEmptyDirectory($directory)) {
-                    $this->error('Cannot create temporary directory, check you have write access to ' . sys_get_temp_dir());
-                }
-
-                if (!chdir($this->getWorkingDirectory())) {
-                    $this->error('Cannot enter '.$directory);
-                }
+                $this->error('Cannot enter '.$directory);
             }
 
-            $this->info(getcwd());
-            if ($this->isVerbose()) {
-                $this->exec('pwd');
-            }
-            $this->exec('cd ' . escapeshellarg($this->getWorkingDirectory()));
-            if ($this->isVerbose()) {
-                $this->exec('pwd');
-            }
+            $this->forceDirectoryChange = $pwd === shell_exec('pwd');
 
             if ($settings === 'travis') {
                 $settings = [
@@ -438,7 +424,11 @@ class MultiTester
         $this->output("> $command\n");
 
         $pipes = [];
-        $process = proc_open($command, $this->getProcStreams(), $pipes);
+        $process = proc_open(
+            ($this->forceDirectoryChange ? 'cd ' . escapeshellarg($this->getWorkingDirectory()) . ' && ' : '') . $command,
+            $this->getProcStreams(),
+            $pipes
+        );
         if (!is_resource($process)) {
             return false; // @codeCoverageIgnore
         }

@@ -68,7 +68,10 @@ class Config
         $projects = isset($config['projects']) ? $config['projects'] : $config;
         $config = isset($config['config']) ? $config['config'] : $config;
 
-        $projectDirectory = isset($config['directory']) ? $config['directory'] : dirname(realpath($configFile));
+        $base = dirname(realpath($configFile));
+        $projectDirectory = isset($config['directory'])
+            ? rtrim($base, '/\\') . DIRECTORY_SEPARATOR . ltrim($config['directory'], '/\\')
+            : $base;
         $composerFile = $projectDirectory . '/composer.json';
         if (!file_exists($composerFile)) {
             throw new MultiTesterException("Set the 'directory' entry to a path containing a composer.json file.");
