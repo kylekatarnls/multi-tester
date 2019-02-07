@@ -156,6 +156,34 @@ class MultiTester
                 $this->error('Cannot create temporary directory, check you have write access to ' . sys_get_temp_dir());
             }
 
+            $cwd = getcwd();
+
+            if (!chdir($this->getWorkingDirectory())) {
+                $this->info('Cannot enter '.$directory);
+
+                $directory = $cwd . '/multi-tester-' . mt_rand(0, 9999999);
+                $this->info("working directory: $directory\n");
+                $this->setWorkingDirectory($directory);
+                $directories[] = $directory;
+
+                if (!$this->createEmptyDirectory($directory)) {
+                    $this->error('Cannot create temporary directory, check you have write access to ' . sys_get_temp_dir());
+                }
+
+                if (!chdir($this->getWorkingDirectory())) {
+                    $this->error('Cannot enter '.$directory);
+                }
+            }
+
+            $this->info(getcwd());
+            if ($this->isVerbose()) {
+                $this->exec('pwd');
+            }
+            $this->exec('cd ' . escapeshellarg($this->getWorkingDirectory()));
+            if ($this->isVerbose()) {
+                $this->exec('pwd');
+            }
+
             if ($settings === 'travis') {
                 $settings = [
                     'script'  => 'travis',
@@ -202,15 +230,8 @@ class MultiTester
                 $settings['clone'] = [$settings['clone']];
             }
 
-            $cwd = getcwd();
-            chdir($this->getWorkingDirectory());
-
             $this->emptyDirectory('.');
             $this->info("empty directory: $directory\n");
-            if ($this->isVerbose()) {
-                $this->exec('pwd');
-                $this->exec('ls -la');
-            }
 
             if (!$this->exec($settings['clone'])) {
                 $this->error("Cloning $package failed.");
