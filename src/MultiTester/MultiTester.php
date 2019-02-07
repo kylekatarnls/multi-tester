@@ -155,6 +155,7 @@ class MultiTester
             $directory = sys_get_temp_dir() . '/multi-tester-' . mt_rand(0, 9999999);
             $this->info("working directory: $directory\n");
             $this->setWorkingDirectory($directory);
+            $directory = $this->getWorkingDirectory();
             $directories[] = $directory;
 
             if (!$this->createEmptyDirectory($directory)) {
@@ -164,8 +165,8 @@ class MultiTester
             $pwd = shell_exec('pwd');
             $cwd = getcwd();
 
-            if (!chdir($this->getWorkingDirectory())) {
-                $this->error('Cannot enter '.$directory);
+            if (!chdir($directory)) {
+                $this->error("Cannot enter $directory");
             }
 
             $this->forceDirectoryChange = $pwd === shell_exec('pwd');
