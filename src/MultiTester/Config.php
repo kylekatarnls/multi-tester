@@ -5,6 +5,11 @@ namespace MultiTester;
 class Config
 {
     /**
+     * @var MultiTester
+     */
+    public $tester;
+
+    /**
      * @var string
      */
     public $configFile;
@@ -54,6 +59,7 @@ class Config
      */
     public function __construct(MultiTester $multiTester, array $arguments)
     {
+        $this->tester = $multiTester;
         $this->verbose = in_array('--verbose', $arguments) || in_array('-v', $arguments);
         $arguments = array_filter($arguments, function ($argument) {
             return $argument !== '--verbose' && $argument !== '-v';
@@ -81,5 +87,13 @@ class Config
             throw new MultiTesterException("The composer.json file must contains a 'name' entry.");
         }
         $this->packageName = $this->data['name'];
+    }
+
+    /**
+     * @return MultiTester
+     */
+    public function getTester()
+    {
+        return $this->tester;
     }
 }

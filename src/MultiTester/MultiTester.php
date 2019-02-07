@@ -128,6 +128,72 @@ class MultiTester
         $this->verbose = $verbose;
     }
 
+    public function exec($command)
+    {
+        return is_array($command)
+            ? $this->execCommands($command)
+            : $this->execCommand($command);
+    }
+
+    public function getComposerSettings($package)
+    {
+        if (!isset($this->composerSettings[$package])) {
+            $this->composerSettings[$package] = new File("https://repo.packagist.org/p/$package.json");
+            $this->composerSettings[$package] = isset($this->composerSettings[$package]['packages'], $this->composerSettings[$package]['packages'][$package])
+                ? $this->composerSettings[$package]['packages'][$package]
+                : null;
+        }
+
+        return $this->composerSettings[$package];
+    }
+
+    public function output($text)
+    {
+        $streams = $this->getProcStreams();
+        $stdout = is_array($streams) && isset($streams[1]) ? $streams[1] : null;
+        if (is_array($stdout) && $stdout[0] === 'file') {
+            $file = fopen($stdout[1], $stdout[2]);
+            fwrite($file, $text);
+            fclose($file);
+
+            return;
+        }
+
+        echo $text;
+    }
+
+    public function info($text)
+    {
+        if ($this->isVerbose()) {
+            $this->output($text);
+        }
+    }
+
+    public function getTravisSettings()
+    {
+        if (!$this->travisSettings) {
+            $travisFile = $this->getTravisFile();
+            if (file_exists($travisFile)) {
+                $this->travisSettings = new File($travisFile);
+            }
+            if (!$this->travisSettings) {
+                $this->travisSettings = [];
+            }
+        }
+
+        return $this->travisSettings;
+    }
+
+    public function clearTravisSettingsCache()
+    {
+        $this->travisSettings = null;
+    }
+
+    /**
+     * @param array $arguments
+     *
+     * @throws MultiTesterException
+     */
     public function run(array $arguments)
     {
         try {
@@ -142,7 +208,7 @@ class MultiTester
         $cwd = getcwd();
 
         foreach ($config->projects as $package => $settings) {
-            $directory = $cwd . '/multi-tester-' . mt_rand(0, 9999999);
+            $directory = sys_get_temp_dir() . '/multi-tester-' . mt_rand(0, 9999999);
             $this->info("working directory: $directory\n");
             $this->setWorkingDirectory($directory);
             $directory = $this->getWorkingDirectory();
@@ -162,101 +228,10 @@ class MultiTester
                 $this->exec('pwd');
             }
 
-            if ($settings === 'travis') {
-                $settings = [
-                    'script'  => 'travis',
-                    'install' => 'travis',
-                ];
-            }
-            if (!is_array($settings)) {
-                $settings = [];
-            }
-            if (!isset($settings['clone'])) {
-                if (!isset($settings['source'])) {
-                    if (!isset($settings['version'])) {
-                        $settings['version'] = 'dev-master';
-                    }
-                    $composerSettings = $this->getComposerSettings($package);
-                    $version = $settings['version'];
-                    if (!isset($composerSettings[$version])) {
-                        $versions = array_filter(array_keys($composerSettings), function ($version) {
-                            return substr($version, 0, 4) !== 'dev-';
-                        });
-                        usort($versions, 'version_compare');
-                        $version = count($versions) ? end($versions) : key($composerSettings);
-                    }
-
-                    $settings['source'] = isset($composerSettings[$version]['source'])
-                        ? $composerSettings[$version]['source']
-                        : null;
-                }
-                if (!isset($settings['source'])) {
-                    $this->error("Source not found for $package, you must provide it manually via a 'source' entry.");
-                }
-                if (!isset($settings['source']['type'], $settings['source']['url'])) {
-                    $this->error("Source malformed, it should contains at least 'type' and 'url' entries.");
-                }
-                if ($settings['source']['type'] !== 'git') {
-                    $this->error("Git source supported only for now, you should provide a manual 'clone' command instead.");
-                }
-                $settings['clone'] = ['git clone ' . $settings['source']['url'] . ' .'];
-                if (isset($settings['source']['reference'])) {
-                    $settings['clone'][] = 'git checkout ' . $settings['source']['reference'];
-                }
-            }
-            if (!is_array($settings['clone'])) {
-                $settings['clone'] = [$settings['clone']];
-            }
-
-            (new Directory('.'))->clean();
-            $this->info("empty directory: $directory\n");
-
-            if (!$this->exec($settings['clone'])) {
-                $this->error("Cloning $package failed.");
-            }
-
-            $this->info("clear travis cache.\n");
-            $this->clearTravisSettingsCache();
-
-            if (!isset($settings['install'])) {
-                $this->output("No install script found, 'composer install --no-interaction' used by default, add a 'install' entry if you want to customize it.\n");
-                $settings['install'] = 'composer install --no-interaction';
-            }
-
-            if ($settings['install'] === 'travis') {
-                $travisSettings = $this->getTravisSettings();
-                if (isset($travisSettings['install'])) {
-                    $this->output('Install script found in ' . $this->getTravisFile() . ", add a 'install' entry if you want to customize it.\n");
-                    $settings['install'] = $travisSettings['install'];
-                }
-            }
-
-            if (!$this->exec($settings['install'])) {
-                $this->error("Installing $package failed.");
-            }
-
-            (new Directory($config->projectDirectory))->copy('vendor/' . $config->packageName, ['.git', 'vendor']);
-
-            if (!isset($settings['script'])) {
-                $this->output("No script found, 'vendor/bin/phpunit --no-coverage' used by default, add a 'script' entry if you want to customize it.\n");
-                $settings['script'] = 'vendor/bin/phpunit --no-coverage';
-            }
-
-            if ($settings['script'] === 'travis') {
-                $travisSettings = $this->getTravisSettings();
-                if (isset($travisSettings['script'])) {
-                    $this->output('Script found in ' . $this->getTravisFile() . ", add a 'script' entry if you want to customize it.\n");
-                    $settings['script'] = $travisSettings['script'];
-                }
-            }
-
-            $script = explode(' ', $settings['script'], 2);
-            if (file_exists($script[0])) {
-                $script[0] = realpath($script[0]);
-            }
-
-            if (!$this->exec(implode(' ', $script))) {
-                $this->error("Test of $package failed.");
+            try {
+                (new Project($package, $config, $settings))->test();
+            } catch (MultiTesterException $exception) {
+                $this->error($exception->getMessage());
             }
 
             chdir($cwd);
@@ -267,60 +242,6 @@ class MultiTester
         foreach ($directories as $directory) {
             (new Directory($directory))->remove();
         }
-    }
-
-    protected function output($text)
-    {
-        $streams = $this->getProcStreams();
-        $stdout = is_array($streams) && isset($streams[1]) ? $streams[1] : null;
-        if (is_array($stdout) && $stdout[0] === 'file') {
-            $file = fopen($stdout[1], $stdout[2]);
-            fwrite($file, $text);
-            fclose($file);
-
-            return;
-        }
-
-        echo $text;
-    }
-
-    protected function info($text)
-    {
-        if ($this->isVerbose()) {
-            $this->output($text);
-        }
-    }
-
-    protected function getTravisSettings()
-    {
-        if (!$this->travisSettings) {
-            $travisFile = $this->getTravisFile();
-            if (file_exists($travisFile)) {
-                $this->travisSettings = new File($travisFile);
-            }
-            if (!$this->travisSettings) {
-                $this->travisSettings = [];
-            }
-        }
-
-        return $this->travisSettings;
-    }
-
-    protected function clearTravisSettingsCache()
-    {
-        $this->travisSettings = null;
-    }
-
-    protected function getComposerSettings($package)
-    {
-        if (!isset($this->composerSettings[$package])) {
-            $this->composerSettings[$package] = new File("https://repo.packagist.org/p/$package.json");
-            $this->composerSettings[$package] = isset($this->composerSettings[$package]['packages'], $this->composerSettings[$package]['packages'][$package])
-                ? $this->composerSettings[$package]['packages'][$package]
-                : null;
-        }
-
-        return $this->composerSettings[$package];
     }
 
     protected function execCommand($command)
@@ -360,13 +281,6 @@ class MultiTester
         }
 
         return true;
-    }
-
-    protected function exec($command)
-    {
-        return is_array($command)
-            ? $this->execCommands($command)
-            : $this->execCommand($command);
     }
 
     protected function error($message)

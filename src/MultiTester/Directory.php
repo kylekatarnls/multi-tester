@@ -26,9 +26,11 @@ class Directory
         (new static($destination))->create();
         $success = true;
 
+        var_dump($exceptions);
         foreach ($files as $file) {
             if ($file !== '.' && $file !== '..' && !in_array($file, $exceptions)) {
                 $path = "$source/$file";
+                echo "$file\n$path\n$destination/$file\n\n";
                 if (@is_dir($path)) {
                     if (!(new static($path))->copy("$destination/$file")) {
                         $success = false;

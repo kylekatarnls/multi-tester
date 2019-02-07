@@ -33,6 +33,7 @@ class DirectoryTest extends TestCase
 
         touch("$testDirectory/dest/foo/bar");
 
+        $this->assertFalse((new Directory("$testDirectory/dest/my-org/my-project"))->copy("$testDirectory/dest/foo/bar"));
         $this->assertFalse((new Directory("$testDirectory/dest/my-org/my-project/readme.md"))->copy("$testDirectory/dest/foo/bar"));
         $this->assertFalse((new Directory("$testDirectory/dest/foo/does-not-exists"))->copy("$testDirectory/dest/foo/biz"));
         $this->assertFalse((new Directory("$testDirectory/dest/foo/bar"))->clean());
