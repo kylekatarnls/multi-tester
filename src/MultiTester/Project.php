@@ -10,7 +10,7 @@ class Project
     protected $config;
 
     /**
-     * @var array Settings of the particular project.
+     * @var array|string Settings of the particular project.
      */
     protected $settings;
 
@@ -19,7 +19,7 @@ class Project
      */
     protected $package;
 
-    public function __construct($package, Config $config, array $settings)
+    public function __construct($package, Config $config, $settings)
     {
         $this->config = $config;
         $this->settings = $settings;
