@@ -288,7 +288,7 @@ class MultiTester
         }
 
         $success = $passed === $count;
-        $this->output("\n" . sprintf($success ? $successFinalString : $failureFinalString, $passed, $count, ($count - $passed) . ' broken' . ($count - $passed > 1 ? 's' : '')) . "\n");
+        $this->output("\n" . sprintf($success ? $successFinalString : $failureFinalString, $passed, $count, ($count - $passed) . ' project' . ($count - $passed > 1 ? 's' : '')) . "\n");
 
         return $success;
     }
