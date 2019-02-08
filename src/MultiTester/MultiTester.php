@@ -250,11 +250,47 @@ class MultiTester
             (new Directory($directory))->remove();
         }
 
+        return $this->dumpSummary($state, $config->config);
+    }
+
+    public function dumpSummary($state, $config)
+    {
+        $count = count($state);
+        $pad = max(array_map('strlen', array_keys($state)));
+        $successString = '%s    Success';
+        $failureString = '%s    > Failure!';
+        $successFinalString = '%d / %d     No project broken by current changes.';
+        $failureFinalString = '%d / %d     %s broken by current changes.';
+        $passed = 0;
+
+        if (isset($config['color_support'])
+            ? $config['color_support']
+            : (DIRECTORY_SEPARATOR === '\\'
+                ? false !== getenv('ANSICON') ||
+                'ON' === getenv('ConEmuANSI') ||
+                false !== getenv('BABUN_HOME')
+                : (false !== getenv('BABUN_HOME')) ||
+                function_exists('posix_isatty') &&
+                @posix_isatty(STDOUT)
+            )
+        ) {
+            $successString = "\033[42;97m $successString \033[0m";
+            $failureString = "\033[41;97m %s    Failure \033[0m";
+            $successFinalString = "\033[42;97m %d / %d     No project broken by current changes. \033[0m";
+            $failureFinalString = "\033[41;97m %d / %d     %s broken by current changes. \033[0m";
+        }
+
         $this->output("\n\n");
 
         foreach ($state as $package => $success) {
-            $this->output(str_pad($package, 100) . ($success ? 'Success' : 'Failure') . "\n");
+            $passed += $success ? 1 : 0;
+            $this->output(sprintf($success ? $successString : $failureString, str_pad($package, $pad)) . "\n");
         }
+
+        $success = $passed === $count;
+        $this->output("\n" . sprintf($success ? $successFinalString : $failureFinalString, $passed, $count, ($count - $passed) . ' broken' . ($count - $passed > 1 ? 's' : '')) . "\n");
+
+        return $success;
     }
 
     protected function execCommand($command)

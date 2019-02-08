@@ -16,4 +16,4 @@ if (file_exists($path)) {
     exit(1);
 }
 
-(new MultiTester())->run($argv);
+exit((new MultiTester())->run($argv) ? 0 : 1);
