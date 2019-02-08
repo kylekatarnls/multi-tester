@@ -70,9 +70,9 @@ class Config
             throw new MultiTesterException("Multi-tester config file '$this->configFile' not found.");
         }
 
-        $this->config = new File($this->configFile);
-        $this->projects = isset($this->config['projects']) ? $this->config['projects'] : $this->config;
-        $this->config = isset($this->config['config']) ? $this->config['config'] : $this->config;
+        $config = new File($this->configFile);
+        $this->projects = isset($config['projects']) ? $config['projects'] : $config;
+        $this->config = isset($config['config']) ? $config['config'] : $config;
 
         $base = dirname(realpath($this->configFile));
         $this->projectDirectory = isset($this->config['directory'])

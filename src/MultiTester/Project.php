@@ -65,6 +65,9 @@ class Project
 
     /**
      * @throws MultiTesterException
+     * @throws TestFailedException
+     *
+     * @return bool
      */
     public function test()
     {
@@ -152,13 +155,45 @@ class Project
             }
         }
 
+        return $this->tryExec($tester, $settings, $package);
+    }
+
+    protected function getScript($settings)
+    {
         $script = explode(' ', $settings['script'], 2);
+
         if (file_exists($script[0])) {
             $script[0] = realpath($script[0]);
         }
 
-        if (!$tester->exec(implode(' ', $script))) {
-            throw new MultiTesterException("Test of $package failed.");
+        return implode(' ', $script);
+    }
+
+    /**
+     * @param MultiTester $tester
+     * @param $settings
+     * @param $package
+     *
+     * @throws TestFailedException
+     *
+     * @return bool
+     */
+    protected function tryExec(MultiTester $tester, $settings, $package)
+    {
+        $tries = 1;
+
+        if (isset($settings['retry'])) {
+            $tries = $settings['retry'];
+        } elseif (($config = $this->getConfig()->config) && isset($config['retry'])) {
+            $tries = $settings['retry'];
         }
+
+        for ($i = $tries; $i > 0; $i--) {
+            if ($tester->exec($this->getScript($settings))) {
+                return true;
+            }
+        }
+
+        throw new TestFailedException("Test of $package failed.");
     }
 }

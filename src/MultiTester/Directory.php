@@ -26,22 +26,9 @@ class Directory
         (new static($destination))->create();
         $success = true;
 
-        var_dump($exceptions);
         foreach ($files as $file) {
             if ($file !== '.' && $file !== '..' && !in_array($file, $exceptions)) {
-                $path = "$source/$file";
-                echo "$file\n$path\n$destination/$file\n\n";
-                if (@is_dir($path)) {
-                    if (!(new static($path))->copy("$destination/$file")) {
-                        $success = false;
-                    }
-
-                    continue;
-                }
-
-                if (!@copy($path, "$destination/$file")) {
-                    $success = false;
-                }
+                $this->copyItem($source, $destination, $file, $success);
             }
         }
 
@@ -63,18 +50,7 @@ class Directory
 
         foreach (@scandir($dir) as $file) {
             if ($file !== '.' && $file !== '..') {
-                $path = $dir . '/' . $file;
-                if (@is_dir($path)) {
-                    if (!(new static($path))->clean() || !@rmdir($path)) {
-                        $success = false;
-                    }
-
-                    continue;
-                }
-
-                if (!@unlink($path)) {
-                    $success = false;
-                }
+                $this->cleanItem($dir . '/' . $file, $success);
             }
         }
 
@@ -100,5 +76,36 @@ class Directory
         }
 
         return @mkdir($dir, 0777, true);
+    }
+
+    protected function copyItem($source, $destination, $file, &$success)
+    {
+        $path = "$source/$file";
+        if (@is_dir($path)) {
+            if (!(new static($path))->copy("$destination/$file")) {
+                $success = false;
+            }
+
+            return;
+        }
+
+        if (!@copy($path, "$destination/$file")) {
+            $success = false;
+        }
+    }
+
+    protected function cleanItem($path, &$success)
+    {
+        if (@is_dir($path)) {
+            if (!(new static($path))->clean() || !@rmdir($path)) {
+                $success = false;
+            }
+
+            return;
+        }
+
+        if (!@unlink($path)) {
+            $success = false;
+        }
     }
 }

@@ -206,8 +206,10 @@ class MultiTester
         $directories = [];
         $pwd = shell_exec('pwd');
         $cwd = getcwd();
+        $state = [];
 
         foreach ($config->projects as $package => $settings) {
+            $state[$package] = true;
             $directory = sys_get_temp_dir() . '/multi-tester-' . mt_rand(0, 9999999);
             $this->info("working directory: $directory\n");
             $this->setWorkingDirectory($directory);
@@ -230,8 +232,13 @@ class MultiTester
 
             try {
                 (new Project($package, $config, $settings))->test();
+            } catch (TestFailedException $exception) {
+                $state[$package] = false;
+                if (isset($config->config['stop_on_failure']) && $config->config['stop_on_failure']) {
+                    $this->error($exception);
+                }
             } catch (MultiTesterException $exception) {
-                $this->error($exception->getMessage());
+                $this->error($exception);
             }
 
             chdir($cwd);
@@ -241,6 +248,12 @@ class MultiTester
 
         foreach ($directories as $directory) {
             (new Directory($directory))->remove();
+        }
+
+        $this->output("\n\n");
+
+        foreach ($state as $package => $success) {
+            $this->output(str_pad($package, 100) . ($success ? 'Success' : 'Failure') . "\n");
         }
     }
 
