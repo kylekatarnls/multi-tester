@@ -70,6 +70,27 @@ class Config
             throw new MultiTesterException("Multi-tester config file '$this->configFile' not found.");
         }
 
+        $this->initProjects();
+
+        $base = dirname(realpath($this->configFile));
+        $this->projectDirectory = isset($this->config['directory'])
+            ? rtrim($base, '/\\') . DIRECTORY_SEPARATOR . ltrim($this->config['directory'], '/\\')
+            : $base;
+        $this->composerFile = $this->projectDirectory . '/composer.json';
+
+        $this->initData();
+    }
+
+    /**
+     * @return MultiTester
+     */
+    public function getTester()
+    {
+        return $this->tester;
+    }
+
+    protected function initProjects()
+    {
         $config = new File($this->configFile);
         $this->config = $config;
 
@@ -79,12 +100,13 @@ class Config
         }
 
         $this->projects = isset($config['projects']) ? $config['projects'] : $config;
+    }
 
-        $base = dirname(realpath($this->configFile));
-        $this->projectDirectory = isset($this->config['directory'])
-            ? rtrim($base, '/\\') . DIRECTORY_SEPARATOR . ltrim($this->config['directory'], '/\\')
-            : $base;
-        $this->composerFile = $this->projectDirectory . '/composer.json';
+    /**
+     * @throws MultiTesterException
+     */
+    protected function initData()
+    {
         if (!file_exists($this->composerFile)) {
             throw new MultiTesterException("Set the 'directory' entry to a path containing a composer.json file.");
         }
@@ -93,13 +115,5 @@ class Config
             throw new MultiTesterException("The composer.json file must contains a 'name' entry.");
         }
         $this->packageName = $this->data['name'];
-    }
-
-    /**
-     * @return MultiTester
-     */
-    public function getTester()
-    {
-        return $this->tester;
     }
 }
