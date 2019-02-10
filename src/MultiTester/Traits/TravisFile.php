@@ -2,7 +2,7 @@
 
 namespace MultiTester\Traits;
 
-Trait TravisFile
+trait TravisFile
 {
     /**
      * @var string Travis CI settings file.

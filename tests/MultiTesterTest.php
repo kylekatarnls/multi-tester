@@ -460,6 +460,8 @@ class MultiTesterTest extends TestCase
         mkdir($directory, 0777, true);
         chdir($directory);
         file_put_contents('.multi-tester.yml', implode("\n", [
+            'config:',
+            '  color_support: false',
             'some-project:',
             "  clone: $exit0",
             "  install: $exit0",
@@ -481,6 +483,11 @@ class MultiTesterTest extends TestCase
         (new Directory($directory))->remove();
 
         $this->assertTrue($success);
-        $this->assertSame("> $exit0\nSuccess command\n\n\n\nsome-project    Success\n\n1 / 1     No project broken by current changes.\n", $output);
+        $this->assertSame(
+            str_repeat("> $exit0\nSuccess command\n\n", 3) .
+            "\n\nsome-project    Success\n\n" .
+            "1 / 1     No project broken by current changes.\n",
+            $output
+        );
     }
 }

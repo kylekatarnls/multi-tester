@@ -2,7 +2,7 @@
 
 namespace MultiTester\Traits;
 
-Trait WorkingDirectory
+trait WorkingDirectory
 {
     /**
      * @var string Temporary working directory.

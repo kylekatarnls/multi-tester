@@ -71,8 +71,14 @@ class Config
         }
 
         $config = new File($this->configFile);
+        $this->config = $config;
+
+        if (isset($config['config'])) {
+            $this->config = $config['config'];
+            unset($config['config']);
+        }
+
         $this->projects = isset($config['projects']) ? $config['projects'] : $config;
-        $this->config = isset($config['config']) ? $config['config'] : $config;
 
         $base = dirname(realpath($this->configFile));
         $this->projectDirectory = isset($this->config['directory'])

@@ -2,7 +2,7 @@
 
 namespace MultiTester\Traits;
 
-Trait StorageDirectory
+trait StorageDirectory
 {
     /**
      * @var string Directory where working directories are created.

@@ -2,7 +2,7 @@
 
 namespace MultiTester\Traits;
 
-Trait MultiTesterFile
+trait MultiTesterFile
 {
     /**
      * @var string Multi-tester default settings file.

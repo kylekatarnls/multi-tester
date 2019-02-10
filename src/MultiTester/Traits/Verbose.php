@@ -2,7 +2,7 @@
 
 namespace MultiTester\Traits;
 
-Trait Verbose
+trait Verbose
 {
     /**
      * @var bool Verbose output.

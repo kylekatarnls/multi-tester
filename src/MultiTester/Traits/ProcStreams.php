@@ -2,7 +2,7 @@
 
 namespace MultiTester\Traits;
 
-Trait ProcStreams
+trait ProcStreams
 {
     /**
      * @var array Stream settings for command execution.
