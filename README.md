@@ -27,7 +27,7 @@ root of your project with a **"name"** property defined (it will be used to repl
 
 Then you need to install multi-tester as a development dependency:
 ```
-composer require kylekatarnls/multi-tester
+composer require kylekatarnls/multi-tester --save-dev
 ```
 
 ## Use
@@ -89,4 +89,47 @@ To get both from **.travis.yml**, use the shortcut:
 
 ```yaml
 symfony/symfony:5.4.*: travis
+```
+
+## Travis
+
+To not have to check manually with multi-tester, you should have it in your CI (continuous integration) process.
+For example if you use Travis, here is how to integrate in it and then get every project tested at each commit.
+
+Let's say you have the following **.travis.yml**:
+
+```yaml
+language: php
+
+php:
+  - 7.1
+  - 7.2
+  - 7.3
+
+install:
+  - composer install
+
+script:
+  - vendor/bin/phpunit
+```
+
+Then you can add a line for **multi-tester** to your builds with:
+
+```yaml
+language: php
+
+matrix:
+  include:
+    - php: 7.1
+    - php: 7.2
+    - php: 7.3
+    - php: 7.3
+      env: MULTITEST='on'
+
+install:
+  - composer install
+
+script:
+  - if [ "$MULTITEST" != "on" ]; then vendor/bin/phpunit; fi;
+  - if [ "$MULTITEST" = "on" ]; then vendor/bin/multi-tester; fi;
 ```
