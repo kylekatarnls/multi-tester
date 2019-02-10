@@ -334,7 +334,7 @@ class ProjectTest extends TestCase
         $settings = [];
         $seedSourceSetting->invokeArgs($project, [&$settings]);
 
-        $this->assertIsArray($settings['source']);
+        $this->assertTrue(is_array($settings['source']));
         $this->assertSame('git', $settings['source']['type']);
         $this->assertSame('https://github.com/pug-php/pug.git', $settings['source']['url']);
 
@@ -369,7 +369,7 @@ class ProjectTest extends TestCase
             'source' => [
                 'type' => 'git',
                 'url'  => 'foo',
-            ]
+            ],
         ]));
     }
 
@@ -412,7 +412,7 @@ class ProjectTest extends TestCase
             'source' => [
                 'type' => 'not-supported',
                 'url'  => 'foo',
-            ]
+            ],
         ]);
     }
 
@@ -435,7 +435,7 @@ class ProjectTest extends TestCase
         $checkSourceSetting->invoke($project, [
             'source' => [
                 'foo' => 'bar',
-            ]
+            ],
         ]);
     }
 

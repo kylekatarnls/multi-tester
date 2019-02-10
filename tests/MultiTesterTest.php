@@ -203,6 +203,32 @@ class MultiTesterTest extends TestCase
     /**
      * @throws \ReflectionException
      */
+    public function testPrepareWorkingDirectoryCreationError()
+    {
+        $file = 'is-a-file';
+        touch($file);
+        $tester = new MultiTester($file);
+        $method = new ReflectionMethod($tester, 'getTravisSettings');
+        $method->setAccessible(true);
+
+        $prepareWorkingDirectory = new ReflectionMethod($tester, 'prepareWorkingDirectory');
+        $prepareWorkingDirectory->setAccessible(true);
+        $message = null;
+
+        try {
+            $prepareWorkingDirectory->invoke($tester);
+        } catch (MultiTesterException $exception) {
+            $message = $exception->getMessage();
+        }
+
+        @unlink($file);
+
+        $this->assertSame('Cannot create temporary directory, check you have write access to is-a-file', $message);
+    }
+
+    /**
+     * @throws \ReflectionException
+     */
     public function testGetComposerSettings()
     {
         $tester = new MultiTester();

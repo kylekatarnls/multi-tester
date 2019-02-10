@@ -284,7 +284,7 @@ class MultiTester
         }
 
         if (!chdir($directory)) {
-            $this->error("Cannot enter $directory");
+            $this->error("Cannot enter $directory"); // @codeCoverageIgnore
         }
     }
 

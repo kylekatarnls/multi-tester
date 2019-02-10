@@ -221,24 +221,32 @@ class Project
     /**
      * @param array $settings
      */
-    protected function seedInstallSetting(&$settings)
+    protected function seedSetting(&$settings, $key, $name, $defaultCommand)
     {
         $tester = $this->getConfig()->getTester();
 
-        if (!isset($settings['install'])) {
-            $tester->output("No install script found, 'composer install --no-interaction' used by default, add a 'install' entry if you want to customize it.\n");
-            $settings['install'] = 'composer install --no-interaction';
+        if (!isset($settings[$key])) {
+            $tester->output("No $name found, '$defaultCommand' used by default, add a '$key' entry if you want to customize it.\n");
+            $settings[$key] = $defaultCommand;
         }
 
-        if ($settings['install'] === 'travis') {
+        if ($settings[$key] === 'travis') {
             $travisSettings = $tester->getTravisSettings();
-            if (isset($travisSettings['install'])) {
-                $tester->output('Install script found in ' . $tester->getTravisFile() . ", add a 'install' entry if you want to customize it.\n");
-                $settings['install'] = $travisSettings['install'];
+            if (isset($travisSettings[$key])) {
+                $tester->output(ucfirst($name) . ' found in ' . $tester->getTravisFile() . ", add a '$key' entry if you want to customize it.\n");
+                $settings[$key] = $travisSettings[$key];
             }
         }
 
-        $this->asArray($settings['install']);
+        $this->asArray($settings[$key]);
+    }
+
+    /**
+     * @param array $settings
+     */
+    protected function seedInstallSetting(&$settings)
+    {
+        $this->seedSetting($settings, 'install', 'install script', 'composer install --no-interaction');
     }
 
     /**
@@ -246,22 +254,7 @@ class Project
      */
     protected function seedScriptSetting(&$settings)
     {
-        $tester = $this->getConfig()->getTester();
-
-        if (!isset($settings['script'])) {
-            $tester->output("No script found, 'vendor/bin/phpunit --no-coverage' used by default, add a 'script' entry if you want to customize it.\n");
-            $settings['script'] = 'vendor/bin/phpunit --no-coverage';
-        }
-
-        if ($settings['script'] === 'travis') {
-            $travisSettings = $tester->getTravisSettings();
-            if (isset($travisSettings['script'])) {
-                $tester->output('Script found in ' . $tester->getTravisFile() . ", add a 'script' entry if you want to customize it.\n");
-                $settings['script'] = $travisSettings['script'];
-            }
-        }
-
-        $this->asArray($settings['script']);
+        $this->seedSetting($settings, 'script', 'script', 'vendor/bin/phpunit --no-coverage');
     }
 
     /**
