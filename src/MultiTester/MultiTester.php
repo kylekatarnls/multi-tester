@@ -213,10 +213,10 @@ class MultiTester
         $this->output("> $command\n");
 
         $pipes = [];
-        $process = proc_open($command, $this->getProcStreams(), $pipes, $this->getWorkingDirectory());
+        $process = @proc_open($command, $this->getProcStreams(), $pipes, $this->getWorkingDirectory());
 
         if (!is_resource($process)) {
-            return false; // @codeCoverageIgnore
+            return false;
         }
 
         $status = proc_get_status($process);

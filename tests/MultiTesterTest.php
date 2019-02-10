@@ -3,6 +3,7 @@
 namespace MultiTester\Tests;
 
 use MultiTester\Config;
+use MultiTester\Directory;
 use MultiTester\MultiTester;
 use MultiTester\MultiTesterException;
 use PHPUnit\Framework\TestCase;
@@ -369,5 +370,117 @@ class MultiTesterTest extends TestCase
 
         $this->assertFileNotExists($directory);
         $this->assertSame('Failure', $message);
+    }
+
+    /**
+     * @throws MultiTesterException
+     * @throws \ReflectionException
+     */
+    public function testTestProject()
+    {
+        $tester = new MultiTester();
+        $directory = sys_get_temp_dir() . '/test-' . mt_rand(0, 99999);
+        mkdir($directory, 0777, true);
+        chdir($directory);
+        copy(__DIR__ . '/project/.multi-tester.yml', '.multi-tester.yml');
+        copy(__DIR__ . '/project/composer.json', 'composer.json');
+        $tester->setWorkingDirectory($directory);
+
+        $testProject = new ReflectionMethod($tester, 'testProject');
+        $testProject->setAccessible(true);
+        $buffer = sys_get_temp_dir() . '/test-' . mt_rand(0, 99999);
+        $tester->setProcStreams([
+            ['file', 'php://stdin', 'r'],
+            ['file', $buffer, 'a'],
+            ['file', $buffer, 'a'],
+        ]);
+        $config = new Config($tester, [__DIR__ . '/../bin/multi-tester']);
+        $exit0 = 'php ' . escapeshellarg(realpath(__DIR__ . '/exit-0.php'));
+        $exit1 = 'php ' . escapeshellarg(realpath(__DIR__ . '/exit-1.php'));
+        $state = true;
+        $package = 'pug-php/pug';
+        $settings = [
+            'clone'   => $exit0,
+            'install' => $exit0,
+            'script'  => $exit0,
+        ];
+
+        $testProject->invokeArgs($tester, [$package, $config, $settings, &$state]);
+        $output = file_get_contents($buffer);
+        @unlink($buffer);
+
+        $this->assertTrue($state);
+        $this->assertSame("> $exit0\nSuccess command\n\n> $exit0\nSuccess command\n\n> $exit0\nSuccess command\n\n", $output);
+
+        $settings = [
+            'clone'   => $exit0,
+            'install' => $exit0,
+            'script'  => $exit1,
+        ];
+
+        $testProject->invokeArgs($tester, [$package, $config, $settings, &$state]);
+        $output = file_get_contents($buffer);
+        @unlink($buffer);
+
+        $this->assertFalse($state);
+        $this->assertSame("> $exit0\nSuccess command\n\n> $exit0\nSuccess command\n\n> $exit1\nFailure command\n\n", $output);
+
+        (new Directory($directory))->remove();
+
+        $settings = [
+            'clone'   => $exit1,
+            'install' => $exit0,
+            'script'  => $exit0,
+        ];
+        $message = null;
+
+        try {
+            $testProject->invokeArgs($tester, [$package, $config, $settings, &$state]);
+        } catch (MultiTesterException $exception) {
+            $message = $exception->getMessage();
+        }
+        $output = file_get_contents($buffer);
+        @unlink($buffer);
+
+        $this->assertSame('Cloning pug-php/pug failed.', $message);
+        $this->assertSame("> $exit1\n", $output);
+
+        (new Directory($directory))->remove();
+    }
+
+    /**
+     * @throws MultiTesterException
+     * @throws \ReflectionException
+     */
+    public function testRun()
+    {
+        $exit0 = 'php ' . escapeshellarg(realpath(__DIR__ . '/exit-0.php'));
+        $tester = new MultiTester();
+        $directory = sys_get_temp_dir() . '/test-' . mt_rand(0, 99999);
+        mkdir($directory, 0777, true);
+        chdir($directory);
+        file_put_contents('.multi-tester.yml', implode("\n", [
+            'some-project:',
+            "  clone: $exit0",
+            "  install: $exit0",
+            "  script: $exit0",
+        ]));
+        copy(__DIR__ . '/project/composer.json', 'composer.json');
+        $tester->setWorkingDirectory($directory);
+        $buffer = sys_get_temp_dir() . '/test-' . mt_rand(0, 99999);
+        $tester->setProcStreams([
+            ['file', 'php://stdin', 'r'],
+            ['file', $buffer, 'a'],
+            ['file', $buffer, 'a'],
+        ]);
+
+        $success = $tester->run([]);
+
+        $output = file_get_contents($buffer);
+        @unlink($buffer);
+        (new Directory($directory))->remove();
+
+        $this->assertTrue($success);
+        $this->assertSame("> $exit0\nSuccess command\n\n\n\nsome-project    Success\n\n1 / 1     No project broken by current changes.\n", $output);
     }
 }
