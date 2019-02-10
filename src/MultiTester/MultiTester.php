@@ -275,7 +275,7 @@ class MultiTester
         $this->setWorkingDirectory($directory);
         $directory = $this->getWorkingDirectory();
 
-        if ($directories) {
+        if (is_array($directories)) {
             $directories[] = $directory;
         }
 

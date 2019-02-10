@@ -28,7 +28,7 @@ class SummaryTest extends TestCase
 
         $summary = new Summary([]);
 
-        $this->assertIsBool($summary->isColored());
+        $this->assertTrue($summary->isColored() === false || $summary->isColored() === true);
     }
 
     /**
@@ -64,7 +64,7 @@ class SummaryTest extends TestCase
             'color_support' => false,
         ];
         $summary = new Summary([
-            'a' => true,
+            'a'   => true,
             'baz' => false,
         ], $config);
 
@@ -76,7 +76,7 @@ class SummaryTest extends TestCase
         ]), trim($summary->get()));
 
         $summary = new Summary([
-            'a' => true,
+            'a'   => true,
             'baz' => true,
         ], $config);
 
@@ -91,7 +91,7 @@ class SummaryTest extends TestCase
             'color_support' => true,
         ];
         $summary = new Summary([
-            'a' => true,
+            'a'   => true,
             'baz' => false,
         ], $config);
 
@@ -103,7 +103,7 @@ class SummaryTest extends TestCase
         ]), trim($summary->get()));
 
         $summary = new Summary([
-            'a' => true,
+            'a'   => true,
             'baz' => true,
         ], $config);
 

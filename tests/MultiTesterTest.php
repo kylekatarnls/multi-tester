@@ -2,6 +2,7 @@
 
 namespace MultiTester\Tests;
 
+use MultiTester\Config;
 use MultiTester\MultiTester;
 use MultiTester\MultiTesterException;
 use PHPUnit\Framework\TestCase;
@@ -34,6 +35,17 @@ class MultiTesterTest extends TestCase
         $tester->setWorkingDirectory('foo/');
 
         $this->assertSame('foo/', $tester->getWorkingDirectory());
+    }
+
+    public function testStorageDirectory()
+    {
+        $tester = new MultiTester();
+
+        $this->assertSame(sys_get_temp_dir(), $tester->getStorageDirectory());
+
+        $tester->setStorageDirectory('foobar/');
+
+        $this->assertSame('foobar/', $tester->getStorageDirectory());
     }
 
     /**
@@ -79,6 +91,113 @@ class MultiTesterTest extends TestCase
             'install' => 'echo "Install"',
             'script'  => 'echo "Else"',
         ], $method->invoke($tester)->toArray());
+    }
+
+    /**
+     * @throws \ReflectionException
+     */
+    public function testGetConfig()
+    {
+        $tester = new MultiTester();
+
+        $getConfig = new ReflectionMethod($tester, 'getConfig');
+        $getConfig->setAccessible(true);
+
+        /** @var Config $config */
+        $config = $getConfig->invoke($tester, ['foo', __DIR__ . '/project/.multi-tester.yml']);
+
+        $this->assertInstanceOf('MultiTester\Config', $config);
+        $this->assertSame('my-org/my-project', $config->packageName);
+
+        $message = null;
+
+        try {
+            $getConfig->invoke($tester, ['foo', __DIR__ . '/project/not-found/.multi-tester.yml']);
+        } catch (MultiTesterException $exception) {
+            $message = $exception->getMessage();
+        }
+
+        $this->assertRegExp('/Multi-tester config file \'[^\']+\/project\/not-found\/\.multi-tester\.yml\' not found./', $message);
+    }
+
+    /**
+     * @throws \ReflectionException
+     */
+    public function testExtractVersion()
+    {
+        $tester = new MultiTester();
+
+        $extractVersion = new ReflectionMethod($tester, 'extractVersion');
+        $extractVersion->setAccessible(true);
+
+        $package = 'foo/bar';
+        $settings = [];
+
+        $extractVersion->invokeArgs($tester, [&$package, &$settings]);
+
+        $this->assertSame('foo/bar', $package);
+        $this->assertSame([], $settings);
+
+        $package = 'foo/bar:^5.4';
+        $settings = [];
+
+        $extractVersion->invokeArgs($tester, [&$package, &$settings]);
+
+        $this->assertSame('foo/bar', $package);
+        $this->assertSame(['version' => '^5.4'], $settings);
+
+        $package = 'foo/bar:old';
+        $settings = ['version' => '1.0'];
+
+        $extractVersion->invokeArgs($tester, [&$package, &$settings]);
+
+        $this->assertSame('foo/bar', $package);
+        $this->assertSame(['version' => '1.0'], $settings);
+    }
+
+    /**
+     * @throws \ReflectionException
+     */
+    public function testRemoveDirectories()
+    {
+        $tester = new MultiTester();
+
+        $removeDirectories = new ReflectionMethod($tester, 'removeDirectories');
+        $removeDirectories->setAccessible(true);
+
+        $directories = [
+            sys_get_temp_dir() . '/test-' . mt_rand(0, 999999),
+            sys_get_temp_dir() . '/test-' . mt_rand(0, 999999),
+        ];
+
+        foreach ($directories as $directory) {
+            mkdir($directory, 0777, true);
+        }
+
+        $removeDirectories->invoke($tester, $directories);
+
+        $this->assertFileNotExists($directories[0]);
+        $this->assertFileNotExists($directories[1]);
+    }
+
+    /**
+     * @throws \ReflectionException
+     */
+    public function testPrepareWorkingDirectory()
+    {
+        $tester = new MultiTester();
+        $method = new ReflectionMethod($tester, 'getTravisSettings');
+        $method->setAccessible(true);
+
+        $prepareWorkingDirectory = new ReflectionMethod($tester, 'prepareWorkingDirectory');
+        $prepareWorkingDirectory->setAccessible(true);
+
+        $directories = [];
+
+        $prepareWorkingDirectory->invokeArgs($tester, [&$directories]);
+
+        $this->assertSame([$tester->getWorkingDirectory()], $directories);
+        $this->assertSame(realpath($tester->getWorkingDirectory()), getcwd());
     }
 
     /**

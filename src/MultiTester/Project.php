@@ -81,13 +81,19 @@ class Project
 
     protected function getScript($script)
     {
-        $script = explode(' ', $script, 2);
+        $script = is_array($script) ? $script : [$script];
 
-        if (file_exists($script[0])) {
-            $script[0] = realpath($script[0]);
+        foreach ($script as &$line) {
+            $line = explode(' ', $line, 2);
+
+            if (file_exists($line[0])) {
+                $line[0] = realpath($line[0]);
+            }
+
+            $line = implode(' ', $line);
         }
 
-        return implode(' ', $script);
+        return $script;
     }
 
     protected function getTries($settings = [], $tries = 1)
@@ -155,7 +161,7 @@ class Project
             $package = $this->getPackage();
             $tester = $this->getConfig()->getTester();
             $composerSettings = $tester->getComposerSettings($package);
-            $version = $this->filterVersion($settings['version'], array_keys($composerSettings));
+            $version = $this->filterVersion($settings['version'], array_keys($composerSettings ?: []));
 
             $settings['source'] = isset($composerSettings[$version]['source'])
                 ? $composerSettings[$version]['source']
@@ -185,6 +191,13 @@ class Project
         }
     }
 
+    protected function asArray(&$value)
+    {
+        if (!is_array($value)) {
+            $value = [$value];
+        }
+    }
+
     /**
      * @param array $settings
      *
@@ -202,9 +215,7 @@ class Project
             }
         }
 
-        if (!is_array($settings['clone'])) {
-            $settings['clone'] = [$settings['clone']];
-        }
+        $this->asArray($settings['clone']);
     }
 
     /**
@@ -226,6 +237,8 @@ class Project
                 $settings['install'] = $travisSettings['install'];
             }
         }
+
+        $this->asArray($settings['install']);
     }
 
     /**
@@ -247,6 +260,8 @@ class Project
                 $settings['script'] = $travisSettings['script'];
             }
         }
+
+        $this->asArray($settings['script']);
     }
 
     /**
