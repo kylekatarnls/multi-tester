@@ -2,17 +2,16 @@
 
 namespace MultiTester;
 
+use MultiTester\Traits\MultiTesterFile;
+use MultiTester\Traits\ProcStreams;
+use MultiTester\Traits\StorageDirectory;
+use MultiTester\Traits\TravisFile;
+use MultiTester\Traits\Verbose;
+use MultiTester\Traits\WorkingDirectory;
+
 class MultiTester
 {
-    /**
-     * @var string Multi-tester default settings file.
-     */
-    protected $multiTesterFile = '.multi-tester.yml';
-
-    /**
-     * @var string Travis CI settings file.
-     */
-    protected $travisFile = '.travis.yml';
+    use WorkingDirectory, MultiTesterFile, TravisFile, StorageDirectory, ProcStreams, Verbose;
 
     /**
      * @var array|File Composer package settings cache.
@@ -24,129 +23,9 @@ class MultiTester
      */
     protected $travisSettings = null;
 
-    /**
-     * @var string Directory where working directories are created.
-     */
-    protected $storageDirectory = null;
-
-    /**
-     * @var string Temporary working directory.
-     */
-    protected $workingDirectory = null;
-
-    /**
-     * @var bool Verbose output.
-     */
-    protected $verbose = false;
-
-    /**
-     * @var array Stream settings for command execution.
-     */
-    protected $procStreams = [
-        ['file', 'php://stdin', 'r'],
-        ['file', 'php://stdout', 'w'],
-        ['file', 'php://stderr', 'w'],
-    ];
-
     public function __construct($storageDirectory = null)
     {
         $this->storageDirectory = $storageDirectory ?: sys_get_temp_dir();
-    }
-
-    /**
-     * @return string
-     */
-    public function getMultiTesterFile()
-    {
-        return $this->multiTesterFile;
-    }
-
-    /**
-     * @param string $multiTesterFile
-     */
-    public function setMultiTesterFile($multiTesterFile)
-    {
-        $this->multiTesterFile = $multiTesterFile;
-    }
-
-    /**
-     * @return string
-     */
-    public function getTravisFile()
-    {
-        return $this->travisFile;
-    }
-
-    /**
-     * @param string $travisFile
-     */
-    public function setTravisFile($travisFile)
-    {
-        $this->travisFile = $travisFile;
-    }
-
-    /**
-     * @return string
-     */
-    public function getStorageDirectory()
-    {
-        return $this->storageDirectory;
-    }
-
-    /**
-     * @param string $storageDirectory
-     */
-    public function setStorageDirectory($storageDirectory)
-    {
-        $this->storageDirectory = $storageDirectory;
-    }
-
-    /**
-     * @return string
-     */
-    public function getWorkingDirectory()
-    {
-        return $this->workingDirectory;
-    }
-
-    /**
-     * @param string $workingDirectory
-     */
-    public function setWorkingDirectory($workingDirectory)
-    {
-        $this->workingDirectory = $workingDirectory;
-    }
-
-    /**
-     * @return array
-     */
-    public function getProcStreams()
-    {
-        return $this->procStreams;
-    }
-
-    /**
-     * @param array $procStreams
-     */
-    public function setProcStreams($procStreams)
-    {
-        $this->procStreams = $procStreams;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isVerbose()
-    {
-        return $this->verbose;
-    }
-
-    /**
-     * @param bool $verbose
-     */
-    public function setVerbose($verbose)
-    {
-        $this->verbose = $verbose;
     }
 
     public function exec($command)
