@@ -19,7 +19,74 @@ of other project(s) replacing your package in their vendor directory with the cu
 **multi-tester** is **Travis CI** friendly. Packages with `.travis.yml` will automatically be handled using **Travis CI**
 standard commands.
 
+## Installation
+
+You first need to use [composer](https://getcomposer.org) for your project and have a **composer.json** file at the
+root of your project with a **"name"** property defined (it will be used to replace the code of your project from the
+**vendor** directory of other projects with the current changes).
+
+Then you need to install multi-tester as a development dependency:
+```
+composer require kylekatarnls/multi-tester
+```
+
+## Use
+
+Once installed, the local command `vendor/bin/multi-tester` will be available. Without argument, it will try to load
+its configuration from **.multi-tester.yml** file in the current directory. But you can specify an other location
+as the first argument: `vendor/bin/multi-tester ./directory/config.json` (config file can be a `.json` or a `.yml`).
+
+You also can get detailed output with `-v` or `--verbose` flag.
+
 ## Configuration
 
+The **.multi-tester.yml** config file is where you will list projects and how to download, install and test them.
 
-vendor/bin/phpunit
+```yaml
+config: # config entry is optional, it's about main config
+  # By default, multi-tester assumes composer.json is in the same directory than .multi-tester.yml
+  # But you can customize it to a relative path:
+  directory: ../foobar
+
+# Specify a vendor/package name as entry
+symfony/symfony:
+  # Specify how to download the project:
+  clone: git clone https://github.com/symfony/symfony.git .
+  # Specify how to install dependencies of the project:
+  install: composer install
+  # Specify how to run unit tests of the project:
+  script: vendor/bin/phpunit
+
+my-org/an-other-project: ...
+```
+
+All entry of a project configuration are optionals.
+
+If you don't specify `clone`, **multi-tester** will check the package name at packagist.org (composer registry) and
+get the Git url from it (other VCS are not supported yet). Instead of `clone`, you can also specify a `version` entry
+to filter packages versions (using packagist.org API). Without version, the last stable will be used.
+
+
+```yaml
+symfony/symfony:
+  version: ^3.2 # can be any semver string: >4.5, ~3.1.0, etc.
+
+# You can pass the version string directly in the package name, so you can run the same package at different versions
+symfony/symfony:5.4.*: default # 'default' means all settings use the default one
+```
+
+If you don't specify `install`, `composer install --no-interaction` will be used by default.
+
+If you don't specify `script`, `vendor/bin/phpunit --no-coverage` will be used by default.
+
+If you set `install: travis`, **multi-tester** will copy the `install` command from the **.travis.yml** file of
+the package you test.
+
+If you set `script: travis`, **multi-tester** will copy the `script` command from the **.travis.yml** file of
+the package you test.
+
+To get both from **.travis.yml**, use the shortcut:
+
+```yaml
+symfony/symfony:5.4.*: travis
+```
