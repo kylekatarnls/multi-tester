@@ -71,7 +71,8 @@ to filter packages versions (using packagist.org API). Without version, the last
 symfony/symfony:
   version: ^3.2 # can be any semver string: >4.5, ~3.1.0, etc.
 
-# You can pass the version string directly in the package name, so you can run the same package at different versions
+# You can pass the version string directly in the package name,
+# so you can run the same package at different versions
 symfony/symfony:5.4.*: default # 'default' means all settings use the default one
 ```
 
