@@ -12,7 +12,8 @@
     "minimum-stability": "dev",
     "require": {
         "php": ">=5.4",
-        "symfony/yaml": "^2.8 || ^3.0 || ^4.0"
+        "symfony/yaml": "^2.8 || ^3.0 || ^4.0",
+        "composer/semver": "^1.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^4.8.35 || ^5.7 || ^6.0 || ^7.0"

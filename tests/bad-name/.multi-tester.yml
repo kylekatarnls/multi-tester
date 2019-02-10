@@ -1,2 +1,6 @@
 config:
   directory: foo
+
+projects:
+  pug-php/pug:^2.5: default
+  laravel/framework:~5.7: default

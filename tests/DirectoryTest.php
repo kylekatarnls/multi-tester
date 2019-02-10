@@ -4,6 +4,7 @@ namespace MultiTester\Tests;
 
 use MultiTester\Directory;
 use PHPUnit\Framework\TestCase;
+use ReflectionMethod;
 
 class DirectoryTest extends TestCase
 {
@@ -64,6 +65,46 @@ class DirectoryTest extends TestCase
         $failure = new Failure("$testDirectory/dest/foo/bar");
         $this->assertFalse($failure->copy("$testDirectory/dest/other"));
         $this->assertFalse($failure->clean());
+
+        $this->assertTrue((new Directory($testDirectory))->remove());
+
+        $this->assertFileNotExists($testDirectory);
+    }
+
+    public function testCopyItem()
+    {
+        $testDirectory = sys_get_temp_dir() . '/test-' . mt_rand(0, 999999);
+        @mkdir($testDirectory, 0777, true);
+
+        $directory = new Directory($testDirectory);
+        $copyItem = new ReflectionMethod($directory, 'copyItem');
+        $copyItem->setAccessible(true);
+
+        $success = true;
+
+        $copyItem->invokeArgs($directory, [$testDirectory, $testDirectory, 'foobar', &$success]);
+
+        $this->assertFalse($success);
+
+        $this->assertTrue((new Directory($testDirectory))->remove());
+
+        $this->assertFileNotExists($testDirectory);
+    }
+
+    public function testCleanItem()
+    {
+        $testDirectory = sys_get_temp_dir() . '/test-' . mt_rand(0, 999999);
+        @mkdir($testDirectory, 0777, true);
+
+        $directory = new Directory($testDirectory);
+        $cleanItem = new ReflectionMethod($directory, 'cleanItem');
+        $cleanItem->setAccessible(true);
+
+        $success = true;
+
+        $cleanItem->invokeArgs($directory, ['foobar', &$success]);
+
+        $this->assertFalse($success);
 
         $this->assertTrue((new Directory($testDirectory))->remove());
 

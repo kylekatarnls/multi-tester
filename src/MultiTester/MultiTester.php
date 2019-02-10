@@ -25,6 +25,11 @@ class MultiTester
     protected $travisSettings = null;
 
     /**
+     * @var string Directory where working directories are created.
+     */
+    protected $storageDirectory = null;
+
+    /**
      * @var string Temporary working directory.
      */
     protected $workingDirectory = null;
@@ -35,11 +40,6 @@ class MultiTester
     protected $verbose = false;
 
     /**
-     * @var bool force directory change for commands execution.
-     */
-    protected $forceDirectoryChange = false;
-
-    /**
      * @var array Stream settings for command execution.
      */
     protected $procStreams = [
@@ -47,6 +47,11 @@ class MultiTester
         ['file', 'php://stdout', 'w'],
         ['file', 'php://stderr', 'w'],
     ];
+
+    public function __construct($storageDirectory = null)
+    {
+        $this->storageDirectory = $storageDirectory ?: sys_get_temp_dir();
+    }
 
     /**
      * @return string
@@ -78,6 +83,22 @@ class MultiTester
     public function setTravisFile($travisFile)
     {
         $this->travisFile = $travisFile;
+    }
+
+    /**
+     * @return string
+     */
+    public function getStorageDirectory()
+    {
+        return $this->storageDirectory;
+    }
+
+    /**
+     * @param string $storageDirectory
+     */
+    public function setStorageDirectory($storageDirectory)
+    {
+        $this->storageDirectory = $storageDirectory;
     }
 
     /**
@@ -196,101 +217,114 @@ class MultiTester
      */
     public function run(array $arguments)
     {
-        try {
-            $config = new Config($this, $arguments);
-        } catch (MultiTesterException $exception) {
-            $this->error($exception);
-        }
-
+        $config = $this->getConfig($arguments);
         $this->setVerbose($config->verbose);
         $directories = [];
-        $pwd = shell_exec('pwd');
         $cwd = getcwd();
         $state = [];
 
         foreach ($config->projects as $package => $settings) {
             $state[$package] = true;
-            $directory = sys_get_temp_dir() . '/multi-tester-' . mt_rand(0, 9999999);
-            $this->info("working directory: $directory\n");
-            $this->setWorkingDirectory($directory);
-            $directory = $this->getWorkingDirectory();
-            $directories[] = $directory;
+            $pointer = &$state[$package];
 
-            if (!(new Directory($directory))->create()) {
-                $this->error('Cannot create temporary directory, check you have write access to ' . sys_get_temp_dir());
-            }
-
-            if (!chdir($directory)) {
-                $this->error("Cannot enter $directory");
-            }
-
-            if (!$this->forceDirectoryChange && $pwd === shell_exec('pwd')) {
-                $this->forceDirectoryChange = true;
-                $this->info("Directory lock detected.\n");
-                $this->exec('pwd');
-            }
-
-            try {
-                (new Project($package, $config, $settings))->test();
-            } catch (TestFailedException $exception) {
-                $state[$package] = false;
-                if (isset($config->config['stop_on_failure']) && $config->config['stop_on_failure']) {
-                    $this->error($exception);
-                }
-            } catch (MultiTesterException $exception) {
-                $this->error($exception);
-            }
+            $this->extractVersion($package, $settings);
+            $this->prepareWorkingDirectory($directories);
+            $this->testProject($package, $config, $settings, $pointer);
 
             chdir($cwd);
 
             (new Directory($this->getWorkingDirectory()))->remove();
         }
 
+        $this->removeDirectories($directories);
+
+        $summary = new Summary($state, $config->config);
+
+        $this->output("\n\n" . $summary->get());
+
+        return $summary->isSuccessful();
+    }
+
+    /**
+     * @param array $arguments
+     *
+     * @throws MultiTesterException
+     *
+     * @return Config
+     */
+    protected function getConfig(array $arguments)
+    {
+        try {
+            $config = new Config($this, $arguments);
+        } catch (MultiTesterException $exception) {
+            $this->error($exception);
+        }
+
+        return $config;
+    }
+
+    /**
+     * @param array|null $directory
+     *
+     * @throws MultiTesterException
+     */
+    protected function prepareWorkingDirectory(&$directories = null)
+    {
+        $directory = $this->getStorageDirectory() . '/multi-tester-' . mt_rand(0, 9999999);
+        $this->info("working directory: $directory\n");
+        $this->setWorkingDirectory($directory);
+        $directory = $this->getWorkingDirectory();
+
+        if ($directories) {
+            $directories[] = $directory;
+        }
+
+        if (!(new Directory($directory))->create()) {
+            $this->error('Cannot create temporary directory, check you have write access to ' . $this->getStorageDirectory());
+        }
+
+        if (!chdir($directory)) {
+            $this->error("Cannot enter $directory");
+        }
+    }
+
+    protected function extractVersion(&$package, &$settings)
+    {
+        list($package, $version) = explode(':', "$package:");
+
+        if ($version !== '' && !isset($settings['version'])) {
+            $settings['version'] = $version;
+        }
+    }
+
+    protected function removeDirectories($directories)
+    {
         foreach ($directories as $directory) {
             (new Directory($directory))->remove();
         }
-
-        return $this->dumpSummary($state, $config->config);
     }
 
-    public function dumpSummary($state, $config)
+    /**
+     * @param string $package
+     * @param Config $config
+     * @param array  $settings
+     * @param bool   $state
+     *
+     * @throws MultiTesterException
+     */
+    protected function testProject($package, $config, $settings, &$state)
     {
-        $count = count($state);
-        $pad = max(array_map('strlen', array_keys($state)));
-        $successString = '%s    Success';
-        $failureString = '%s    > Failure!';
-        $successFinalString = '%d / %d     No project broken by current changes.';
-        $failureFinalString = '%d / %d     %s broken by current changes.';
-        $passed = 0;
+        try {
+            (new Project($package, $config, $settings))->test();
+        } catch (TestFailedException $exception) {
+            $state = false;
 
-        if (isset($config['color_support'])
-            ? $config['color_support']
-            : (DIRECTORY_SEPARATOR === '\\'
-                ? false !== getenv('ANSICON') ||
-                'ON' === getenv('ConEmuANSI') ||
-                false !== getenv('BABUN_HOME')
-                : (false !== getenv('BABUN_HOME')) ||
-                function_exists('posix_isatty') &&
-                @posix_isatty(STDOUT)
-            )
-        ) {
-            $successString = "\033[42;97m $successString \033[0m";
-            $failureString = "\033[41;97m %s    Failure \033[0m";
-            $successFinalString = "\033[42;97m %d / %d     No project broken by current changes. \033[0m";
-            $failureFinalString = "\033[41;97m %d / %d     %s broken by current changes. \033[0m";
+            if (isset($config->config['stop_on_failure']) && $config->config['stop_on_failure']) {
+                $this->error($exception);
+            }
+        } catch (MultiTesterException $exception) {
+            $this->error($exception);
         }
-
-        $this->output("\n\n");
-
-        foreach ($state as $package => $success) {
-            $passed += $success ? 1 : 0;
-            $this->output(sprintf($success ? $successString : $failureString, str_pad($package, $pad)) . "\n");
-        }
-
-        $success = $passed === $count;
-        $this->output("\n" . sprintf($success ? $successFinalString : $failureFinalString, $passed, $count, ($count - $passed) . ' project' . ($count - $passed > 1 ? 's' : '')) . "\n");
-
-        return $success;
     }
 
     protected function execCommand($command)
@@ -300,17 +334,14 @@ class MultiTester
         $this->output("> $command\n");
 
         $pipes = [];
-        $process = proc_open(
-            ($this->forceDirectoryChange ? 'cd ' . escapeshellarg($this->getWorkingDirectory()) . ' && ' : '') . $command,
-            $this->getProcStreams(),
-            $pipes,
-            $this->getWorkingDirectory()
-        );
+        $process = proc_open($command, $this->getProcStreams(), $pipes, $this->getWorkingDirectory());
+
         if (!is_resource($process)) {
             return false; // @codeCoverageIgnore
         }
 
         $status = proc_get_status($process);
+
         while ($status['running']) {
             sleep(1);
             $status = proc_get_status($process);

@@ -25,6 +25,20 @@ class ConfigTest extends TestCase
     }
 
     /**
+     * @throws \MultiTester\MultiTesterException
+     */
+    public function testGetConfig()
+    {
+        chdir(__DIR__ . '/project');
+
+        $tester = new MultiTester();
+
+        $config = new Config($tester, [__DIR__ . '/../bin/multi-tester']);
+
+        $this->assertSame($tester, $config->getTester());
+    }
+
+    /**
      * @expectedException        \MultiTester\MultiTesterException
      * @expectedExceptionMessage Multi-tester config file 'does-not-exists' not found.
      */
