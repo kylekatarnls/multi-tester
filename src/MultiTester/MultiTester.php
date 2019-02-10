@@ -216,7 +216,7 @@ class MultiTester
         $process = @proc_open($command, $this->getProcStreams(), $pipes, $this->getWorkingDirectory());
 
         if (!is_resource($process)) {
-            return false;
+            return false; // @codeCoverageIgnore
         }
 
         $status = proc_get_status($process);

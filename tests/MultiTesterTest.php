@@ -443,7 +443,7 @@ class MultiTesterTest extends TestCase
         @unlink($buffer);
 
         $this->assertSame('Cloning pug-php/pug failed.', $message);
-        $this->assertSame("> $exit1\n", $output);
+        $this->assertSame("> $exit1", trim(str_replace('Failure command', '', $output)));
 
         (new Directory($directory))->remove();
     }
