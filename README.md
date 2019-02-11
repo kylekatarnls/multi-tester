@@ -27,7 +27,7 @@ root of your project with a **"name"** property defined (it will be used to repl
 
 Then you need to install multi-tester as a development dependency:
 ```
-composer require kylekatarnls/multi-tester --save-dev
+composer require kylekatarnls/multi-tester --dev
 ```
 
 ## Use
