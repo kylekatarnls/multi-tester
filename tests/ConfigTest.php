@@ -3,6 +3,7 @@
 namespace MultiTester\Tests;
 
 use MultiTester\Config;
+use MultiTester\Directory;
 use MultiTester\MultiTester;
 use PHPUnit\Framework\TestCase;
 
@@ -36,6 +37,37 @@ class ConfigTest extends TestCase
         $config = new Config($tester, [__DIR__ . '/../bin/multi-tester']);
 
         $this->assertSame($tester, $config->getTester());
+    }
+
+    /**
+     * @throws \MultiTester\MultiTesterException
+     */
+    public function testAddProjects()
+    {
+        $directory = sys_get_temp_dir() . '/test-' . mt_rand(0, 99999);
+        mkdir($directory, 0777, true);
+        chdir($directory);
+        copy(__DIR__ . '/project/composer.json', 'composer.json');
+
+        $tester = new MultiTester();
+        $run = $tester->run([__DIR__ . '/../bin/multi-tester', '--add=foo/bar', '-v', '--add', 'hello/world:~3.4']);
+
+        $this->assertTrue($run);
+        $this->assertTrue($tester->isVerbose());
+        $this->assertFileExists('.multi-tester.yml');
+        $this->assertSame(implode("\n", [
+            '',
+            'foo/bar:',
+            '  install: default',
+            '  script: default',
+            '',
+            'hello/world:~3.4:',
+            '  install: default',
+            '  script: default',
+            '',
+        ]), file_get_contents('.multi-tester.yml'));
+
+        (new Directory($directory))->remove();
     }
 
     /**

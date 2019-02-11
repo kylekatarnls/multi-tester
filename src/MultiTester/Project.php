@@ -225,8 +225,11 @@ class Project
     {
         $tester = $this->getConfig()->getTester();
 
-        if (!isset($settings[$key])) {
-            $tester->output("No $name found, '$defaultCommand' used by default, add a '$key' entry if you want to customize it.\n");
+        if (!isset($settings[$key]) || $settings[$key] === 'default') {
+            if (!isset($settings[$key])) {
+                $tester->output("No $name found, '$defaultCommand' used by default, add a '$key' entry if you want to customize it.\n");
+            }
+
             $settings[$key] = $defaultCommand;
         }
 

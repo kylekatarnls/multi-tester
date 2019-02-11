@@ -50,6 +50,11 @@ class Config
     public $verbose;
 
     /**
+     * @var string[]
+     */
+    public $adds = [];
+
+    /**
      * Config constructor.
      *
      * @param MultiTester $multiTester
@@ -59,12 +64,14 @@ class Config
      */
     public function __construct(MultiTester $multiTester, array $arguments)
     {
+        $arguments = $this->filterArguments($arguments, '--add');
         $this->tester = $multiTester;
         $this->verbose = in_array('--verbose', $arguments) || in_array('-v', $arguments);
         $arguments = array_filter($arguments, function ($argument) {
             return $argument !== '--verbose' && $argument !== '-v';
         });
         $this->configFile = isset($arguments[1]) ? $arguments[1] : $multiTester->getMultiTesterFile();
+        $this->addProjects();
 
         if (!file_exists($this->configFile)) {
             throw new MultiTesterException("Multi-tester config file '$this->configFile' not found.");
@@ -81,12 +88,57 @@ class Config
         $this->initData();
     }
 
+    public function addProjects()
+    {
+        if (count($this->adds)) {
+            $file = fopen($this->configFile, 'a');
+
+            foreach ($this->adds as $project) {
+                fwrite($file, "\n$project:\n  install: default\n  script: default\n");
+            }
+
+            fclose($file);
+        }
+    }
+
     /**
      * @return MultiTester
      */
     public function getTester()
     {
         return $this->tester;
+    }
+
+    protected function filterArguments($arguments, $key)
+    {
+        $result = [];
+        $add = false;
+        $length = strlen($key) + 1;
+
+        foreach ($arguments as $argument) {
+            if ($add) {
+                $add = false;
+                $this->adds[] = $argument;
+
+                continue;
+            }
+
+            if ($argument === $key) {
+                $add = true;
+
+                continue;
+            }
+
+            if (substr($argument, 0, $length) === "$key=") {
+                $this->adds[] = substr($argument, $length);
+
+                continue;
+            }
+
+            $result[] = $argument;
+        }
+
+        return $result;
     }
 
     protected function initProjects()

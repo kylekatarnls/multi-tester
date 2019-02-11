@@ -98,6 +98,11 @@ class MultiTester
     {
         $config = $this->getConfig($arguments);
         $this->setVerbose($config->verbose);
+
+        if (count($config->adds)) {
+            return true;
+        }
+
         $directories = [];
         $cwd = getcwd();
         $state = [];
