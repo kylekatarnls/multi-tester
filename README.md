@@ -32,9 +32,24 @@ composer require kylekatarnls/multi-tester --dev
 
 ## Use
 
-Once installed, the local command `vendor/bin/multi-tester` will be available. Without argument, it will try to load
-its configuration from **.multi-tester.yml** file in the current directory. But you can specify an other location
-as the first argument: `vendor/bin/multi-tester ./directory/config.json` (config file can be a `.json` or a `.yml`).
+Once installed, the local command `vendor/bin/multi-tester` will be available.
+
+With `--add` option it will create **.multi-tester.yml** (or the config file you passed as first argument)
+if it does not exist and add a project with default settings in it.
+
+Without `--add` it will run tests on specified projects in the config file.
+
+```
+# Add a project:
+vendor/bin/multi-tester --add=nesbot/carbon
+
+# Run the tests:
+vendor/bin/multi-tester
+```
+
+Without argument, it will try to load its configuration from **.multi-tester.yml** file in the current directory.
+But you can specify an other location as the first argument: `vendor/bin/multi-tester ./directory/config.json`
+(config file can be a `.json` or a `.yml`).
 
 You also can get detailed output with `-v` or `--verbose` flag.
 
