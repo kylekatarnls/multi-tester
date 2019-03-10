@@ -274,6 +274,8 @@ class Project
         (new Directory('.'))->clean();
         $tester->info("empty current directory\n");
 
+        $tester->framedInfo("Cloning $package");
+
         if (!$tester->exec($settings['clone'])) {
             throw new MultiTesterException("Cloning $package failed.");
         }
@@ -293,6 +295,8 @@ class Project
         $tester->clearTravisSettingsCache();
 
         $this->seedInstallSetting($settings);
+
+        $tester->framedInfo("Installing $package");
 
         if (!$tester->exec($settings['install'])) {
             throw new MultiTesterException("Installing $package failed.");
@@ -314,6 +318,8 @@ class Project
         (new Directory($config->projectDirectory))->copy('vendor/' . $config->packageName, ['.git', 'vendor']);
 
         $this->seedScriptSetting($settings);
+
+        $tester->framedInfo("Testing $package");
 
         return $this->tryExec($tester, $settings, $package);
     }

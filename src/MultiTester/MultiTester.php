@@ -69,6 +69,21 @@ class MultiTester
         }
     }
 
+    public function framedInfo($text)
+    {
+        $lines = explode("\n", trim($text));
+        $widths = array_map('mb_strlen', $lines);
+        $widths[] = 120;
+        $width = max($widths);
+        $bar = str_repeat('*', $width);
+
+        $text = implode("\n", array_map(function ($line) use ($width) {
+            return '*'.str_pad($line, $width - 2, ' ', STR_PAD_BOTH).'*';
+        }, $lines));
+
+        $this->info("$bar\n$text\n$bar\n");
+    }
+
     public function getTravisSettings()
     {
         if (!$this->travisSettings) {
