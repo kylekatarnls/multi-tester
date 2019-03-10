@@ -78,7 +78,7 @@ class MultiTester
         $bar = str_repeat('*', $width);
 
         $text = implode("\n", array_map(function ($line) use ($width) {
-            return '*'.str_pad($line, $width - 2, ' ', STR_PAD_BOTH).'*';
+            return '*' . str_pad($line, $width - 2, ' ', STR_PAD_BOTH) . '*';
         }, $lines));
 
         $this->info("$bar\n$text\n$bar\n");
