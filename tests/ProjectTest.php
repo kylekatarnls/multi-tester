@@ -463,10 +463,12 @@ class ProjectTest extends TestCase
         $settings = [];
         $seedCloneSetting->invokeArgs($project, [&$settings]);
 
-        $this->assertSame([
-            'git clone https://github.com/pug-php/pug.git .',
-            'git checkout 9f475c86aa479e86e7d942092aded28ca2d7bcf7',
-        ], $settings['clone']);
+        $clone = $settings['clone'];
+
+        $this->assertIsArray($clone);
+        $this->assertCount(2, $clone);
+        $this->assertSame('git clone https://github.com/pug-php/pug.git .', $clone[0]);
+        $this->assertRegExp('/^git checkout [0-9a-f]+$/', $clone[1]);
     }
 
     /**
