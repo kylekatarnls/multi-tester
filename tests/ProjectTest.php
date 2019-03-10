@@ -465,7 +465,7 @@ class ProjectTest extends TestCase
 
         $clone = $settings['clone'];
 
-        $this->assertIsArray($clone);
+        $this->assertTrue(is_array($clone));
         $this->assertCount(2, $clone);
         $this->assertSame('git clone https://github.com/pug-php/pug.git .', $clone[0]);
         $this->assertRegExp('/^git checkout [0-9a-f]+$/', $clone[1]);
