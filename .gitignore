@@ -5,3 +5,7 @@ composer.lock
 /.idea/
 /docker-compose-debug.yml
 /docker-compose.yml
+/.multi-tester.yml
+/tests/tmp/
+/tests/report.html
+/psalm.xml

@@ -5,14 +5,19 @@ use MultiTester\MultiTester;
 
 set_time_limit(-1);
 
-//Check for autoload file
-$cwd = getcwd();
-$path = "$cwd/vendor/autoload.php";
+function includeIfExists($file)
+{
+    if (file_exists($file)) {
+        return include $file;
+    }
+}
 
-if (file_exists($path)) {
-    require $path;
-} else {
-    echo "Composer's autoload.php not found in $cwd.";
+//Check for autoload file
+if (
+    (!$loader = includeIfExists(__DIR__ . '/../vendor/autoload.php'))
+    && (!$loader = includeIfExists(__DIR__ . '/../../../autoload.php'))
+) {
+    echo "Composer's autoload.php file not found.";
     exit(1);
 }
 
