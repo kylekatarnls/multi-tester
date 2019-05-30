@@ -31,5 +31,4 @@ if (!$loader = getLoader()) {
     exit(1);
 }
 
-echo "Composer's autoload.php not found in checked folders:\n - " . implode("\n - ", $possibleFolders) . "\n";
-exit(1);
+exit((new MultiTester())->run($argv) ? 0 : 1);
