@@ -12,11 +12,20 @@ function includeIfExists($file)
     }
 }
 
+function getLoader()
+{
+    $cwd = getcwd();
+    $possibleFolders = ["$cwd/vendor", __DIR__ . '/../vendor', __DIR__ . '/../../..'];
+    foreach ($possibleFolders as $dir) {
+        if ($loader = includeIfExists($dir . '/autoload.php')) {
+            return $loader;
+        }
+    }
+    return false;
+}
+
 //Check for autoload file
-if (
-    (!$loader = includeIfExists(__DIR__ . '/../vendor/autoload.php'))
-    && (!$loader = includeIfExists(__DIR__ . '/../../../autoload.php'))
-) {
+if (!$loader = getLoader()) {
     echo "Composer's autoload.php file not found.";
     exit(1);
 }
