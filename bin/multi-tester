@@ -12,18 +12,23 @@ function includeIfExists($file)
     }
 }
 
-//Check for autoload file
-
-$possibleFolders = array_unique(array_filter(array_map('realpath', [
-        getcwd() . '/vendor',
-        __DIR__ . '/../vendor',
-        __DIR__ . '/../../..'
-]), 'file_exists'));
-
-foreach ($possibleFolders as $folder) {
-    if (includeIfExists("$folder/autoload.php")) {
-        exit((new MultiTester())->run($argv) ? 0 : 1);
+function getLoader()
+{
+    $cwd = getcwd();
+    $possibleFolders = ["$cwd/vendor", __DIR__ . '/../vendor', __DIR__ . '/../../..'];
+    foreach ($possibleFolders as $dir) {
+        if (($loader = includeIfExists($dir . '/autoload.php'))
+            && class_exists('MultiTester\MultiTester')) {
+            return $loader;
+        }
     }
+    return false;
+}
+
+//Check for autoload file
+if (!$loader = getLoader()) {
+    echo "Composer's autoload.php file not found.";
+    exit(1);
 }
 
 echo "Composer's autoload.php not found in checked folders:\n - " . implode("\n - ", $possibleFolders) . "\n";
