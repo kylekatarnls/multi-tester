@@ -5,14 +5,31 @@ use MultiTester\MultiTester;
 
 set_time_limit(-1);
 
-//Check for autoload file
-$cwd = getcwd();
-$path = "$cwd/vendor/autoload.php";
+function includeIfExists($file)
+{
+    if (file_exists($file)) {
+        return include $file;
+    }
+}
 
-if (file_exists($path)) {
-    require $path;
-} else {
-    echo "Composer's autoload.php not found in $cwd.";
+function getLoader()
+{
+    $cwd = getcwd();
+    $possibleFolders = ["$cwd/vendor", __DIR__ . '/../vendor', __DIR__ . '/../../..'];
+    foreach ($possibleFolders as $dir) {
+        if ($loader = includeIfExists($dir . '/autoload.php')) {
+            if (class_exists('MultiTester\MultiTester')) {
+                return $loader;
+            }
+            $loader->unregister();
+        }
+    }
+    return false;
+}
+
+//Check for autoload file
+if (!$loader = getLoader()) {
+    echo "Composer's autoload.php file not found.";
     exit(1);
 }
 
