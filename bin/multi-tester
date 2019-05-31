@@ -14,22 +14,30 @@ function includeIfExists($file)
 
 function getLoader()
 {
-    $cwd = getcwd();
-    $possibleFolders = ["$cwd/vendor", __DIR__ . '/../vendor', __DIR__ . '/../../..'];
+    global $possibleFolders;
+
     foreach ($possibleFolders as $dir) {
         if ($loader = includeIfExists($dir . '/autoload.php')) {
             if (class_exists('MultiTester\MultiTester')) {
                 return $loader;
             }
+
             $loader->unregister();
         }
     }
+
     return false;
 }
 
+$possibleFolders = array_unique(array_filter(array_map('realpath', [
+    getcwd() . '/vendor',
+    __DIR__ . '/../vendor',
+    __DIR__ . '/../../..'
+]), 'file_exists'));
+
 //Check for autoload file
-if (!$loader = getLoader()) {
-    echo "Composer's autoload.php file not found.";
+if (!getLoader()) {
+    echo "Composer's autoload.php not found in checked folders:\n - " . implode("\n - ", $possibleFolders) . "\n";
     exit(1);
 }
 
