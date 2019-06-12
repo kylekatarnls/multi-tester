@@ -36,7 +36,7 @@ if (!$loader = getLoader()) {
 try {
     $code = (new MultiTester())->run($argv) ? 0 : 1;
 } catch (\Exception $e) {
-    echo $e->getMessage();
+    echo 'ERROR: ' .$e->getMessage();
     exit(1);
 }
 exit($code);
