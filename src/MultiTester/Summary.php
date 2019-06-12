@@ -23,20 +23,18 @@ class Summary
     /**
      * @return bool
      */
-    public function isColored()
+    public static function isColorSupported()
     {
-        return isset($this->config['color_support'])
-            ? $this->config['color_support']
-            // @codeCoverageIgnoreStart
-            : (DIRECTORY_SEPARATOR === '\\'
+        return
+            (
+            DIRECTORY_SEPARATOR === '\\'
                 ? false !== getenv('ANSICON') ||
                 'ON' === getenv('ConEmuANSI') ||
                 false !== getenv('BABUN_HOME')
                 : (false !== getenv('BABUN_HOME')) ||
-                function_exists('posix_isatty') &&
-                @posix_isatty(STDOUT)
+                (function_exists('posix_isatty') &&
+                    @posix_isatty(STDOUT))
             );
-        // @codeCoverageIgnoreEnd
     }
 
     /**
@@ -66,9 +64,20 @@ class Summary
             $output .= sprintf($success ? $successString : $failureString, str_pad($package, $pad)) . "\n";
         }
 
-        $output .= "\n" . sprintf($passed === $count ? $successFinalString : $failureFinalString, $passed, $count, ($count - $passed) . ' project' . ($count - $passed > 1 ? 's' : '')) . "\n";
+        $output .= "\n" . sprintf($passed === $count ? $successFinalString : $failureFinalString, $passed, $count,
+                ($count - $passed) . ' project' . ($count - $passed > 1 ? 's' : '')) . "\n";
 
         return $output;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isColored()
+    {
+        return isset($this->config['color_support'])
+            ? $this->config['color_support']
+            : self::isB();
     }
 
     /**

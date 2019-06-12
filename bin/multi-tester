@@ -2,6 +2,7 @@
 <?php
 
 use MultiTester\MultiTester;
+use MultiTester\Summary;
 
 set_time_limit(-1);
 
@@ -34,7 +35,7 @@ function getLoader()
 $possibleFolders = array_unique(array_filter(array_map('realpath', [
     getcwd() . '/vendor',
     __DIR__ . '/../vendor',
-    __DIR__ . '/../../..'
+    __DIR__ . '/../../..',
 ]), 'file_exists'));
 
 //Check for autoload file
@@ -46,8 +47,12 @@ if (!getLoader()) {
 try {
     $code = (new MultiTester())->run($argv) ? 0 : 1;
 } catch (\Exception $e) {
-    echo 'ERROR: ' .$e->getMessage();
+    if (Summary::isColorSupported()) { // is colored?
+        $errorString = " \033[41;1;97m  ERROR  \033[0m\033[31m {$e->getMessage()} \033[0m" ;
+    } else {
+        $errorString = 'ERROR:' . $e->getMessage();
+    }
+    echo PHP_EOL . $errorString . PHP_EOL;
     exit(1);
 }
 exit($code);
-
