@@ -77,7 +77,7 @@ class Summary
     {
         return isset($this->config['color_support'])
             ? $this->config['color_support']
-            : self::isB();
+            : self::isColorSupported();
     }
 
     /**
