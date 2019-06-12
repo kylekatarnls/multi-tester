@@ -10,3 +10,4 @@ composer.lock
 /tests/report.html
 /psalm.xml
 /phpcs.xml
+/.chglog/
