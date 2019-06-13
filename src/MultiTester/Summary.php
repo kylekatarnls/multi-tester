@@ -54,8 +54,12 @@ class Summary
             $output .= sprintf($success ? $successString : $failureString, str_pad($package, $pad)) . "\n";
         }
 
-        $output .= "\n" . sprintf($passed === $count ? $successFinalString : $failureFinalString, $passed, $count,
-                    ($count - $passed) . ' project' . ($count - $passed > 1 ? 's' : '')) . "\n";
+        $output .= "\n" . sprintf(
+            $passed === $count ? $successFinalString : $failureFinalString,
+            $passed,
+            $count,
+            ($count - $passed) . ' project' . ($count - $passed > 1 ? 's' : '')
+        ) . "\n";
 
         return $output;
     }
