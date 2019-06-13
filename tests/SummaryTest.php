@@ -119,7 +119,6 @@ class SummaryTest extends TestCase
      * @expectedException        \MultiTester\Exceptions\ZeroProjectsTestedException
      * @expectedExceptionMessage No projects tested.
      *
-     * 
      * @throws \MultiTester\Exceptions\MultiTesterException
      */
     public function testGetWhenStateIsEmpty()
