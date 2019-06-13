@@ -2,8 +2,8 @@
 
 namespace MultiTester;
 
-use MultiTester\Exceptions\MultiTesterException;
 use MultiTester\Exceptions\ConfigFileNotFoundException;
+use MultiTester\Exceptions\MultiTesterException;
 
 class Config
 {

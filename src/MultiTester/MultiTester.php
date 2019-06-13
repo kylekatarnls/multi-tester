@@ -2,7 +2,6 @@
 
 namespace MultiTester;
 
-use MultiTester\Exceptions\ConfigFileNotFoundException;
 use MultiTester\Exceptions\MultiTesterException;
 use MultiTester\Exceptions\TestFailedException;
 use MultiTester\Exceptions\ZeroProjectsTestedException;
@@ -111,9 +110,10 @@ class MultiTester
     /**
      * @param array $arguments
      *
-     * @return bool
      * @throws MultiTesterException
      * @throws ZeroProjectsTestedException
+     *
+     * @return bool
      */
     public function run(array $arguments)
     {
