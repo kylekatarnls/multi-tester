@@ -1,6 +1,7 @@
 #!/usr/bin/env php
 <?php
 
+use MultiTester\Color;
 use MultiTester\Exceptions\ConfigFileNotFoundException;
 use MultiTester\Exceptions\MultiTesterException;
 use MultiTester\Exceptions\ZeroProjectsTestedException;
@@ -39,7 +40,7 @@ function showError(\Exception $e)
 {
     $errorString = 'ERROR:' . $e->getMessage();
 
-    if (Summary::isColorSupported()) { // is colored?
+    if (Color::isSupported()) { // is colored?
         $errorString = " \033[41;1;97m  ERROR  \033[0m\033[31m {$e->getMessage()} \033[0m";
     }
 
