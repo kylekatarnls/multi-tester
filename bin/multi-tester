@@ -1,6 +1,9 @@
 #!/usr/bin/env php
 <?php
 
+use MultiTester\Exceptions\ConfigFileNotFoundException;
+use MultiTester\Exceptions\MultiTesterException;
+use MultiTester\Exceptions\ZeroProjectsTestedException;
 use MultiTester\MultiTester;
 use MultiTester\Summary;
 
@@ -32,6 +35,19 @@ function getLoader()
     return false;
 }
 
+function showError(\Exception $e)
+{
+    $errorString = 'ERROR:' . $e->getMessage();
+
+    if (Summary::isColorSupported()) { // is colored?
+        $errorString = " \033[41;1;97m  ERROR  \033[0m\033[31m {$e->getMessage()} \033[0m";
+    }
+
+    echo "\n" . $errorString . "\n\n";
+
+}
+
+
 $possibleFolders = array_unique(array_filter(array_map('realpath', [
     getcwd() . '/vendor',
     __DIR__ . '/../vendor',
@@ -45,14 +61,28 @@ if (!getLoader()) {
 }
 
 try {
-    $code = (new MultiTester())->run($argv) ? 0 : 1;
-} catch (\Exception $e) {
-    if (Summary::isColorSupported()) { // is colored?
-        $errorString = " \033[41;1;97m  ERROR  \033[0m\033[31m {$e->getMessage()} \033[0m" ;
+    $multiTester = new MultiTester();
+    $code = $multiTester->run($argv) ? 0 : 1;
+} catch (ZeroProjectsTestedException $e) {
+    showError($e);
+
+    if (isset($multiTester) && $multiTester->isVerbose()) {
+
+        echo ' Check you have projects in your config file: ' . $multiTester->getMultiTesterFile(). "\n\n";
+
+        echo "Trace:\n";
+        echo $e->getTraceAsString() . "\n\n";
     } else {
-        $errorString = 'ERROR:' . $e->getMessage();
+        echo ' Use --verbose option to get more details.' . "\n\n";
     }
-    echo PHP_EOL . $errorString . PHP_EOL;
+    exit(1);
+}
+catch (MultiTesterException $e) {
+    showError($e);
+    if (isset($multiTester) && $multiTester->isVerbose()) {
+        echo "Trace:\n";
+        echo $e->getTraceAsString() . "\n\n";
+    }
     exit(1);
 }
 exit($code);

@@ -2,6 +2,9 @@
 
 namespace MultiTester;
 
+use MultiTester\Exceptions\MultiTesterException;
+use MultiTester\Exceptions\ConfigFileNotFoundException;
+
 class Config
 {
     /**
@@ -58,8 +61,9 @@ class Config
      * Config constructor.
      *
      * @param MultiTester $multiTester
-     * @param array       $arguments
+     * @param array $arguments
      *
+     * @throws ConfigFileNotFoundException
      * @throws MultiTesterException
      */
     public function __construct(MultiTester $multiTester, array $arguments)
@@ -74,7 +78,7 @@ class Config
         $this->addProjects();
 
         if (!file_exists($this->configFile)) {
-            throw new MultiTesterException("Multi-tester config file '$this->configFile' not found.");
+            throw new ConfigFileNotFoundException("Multi-tester config file '$this->configFile' not found.");
         }
 
         $this->initProjects();

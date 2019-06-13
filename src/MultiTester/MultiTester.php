@@ -2,6 +2,10 @@
 
 namespace MultiTester;
 
+use MultiTester\Exceptions\ConfigFileNotFoundException;
+use MultiTester\Exceptions\MultiTesterException;
+use MultiTester\Exceptions\TestFailedException;
+use MultiTester\Exceptions\ZeroProjectsTestedException;
 use MultiTester\Traits\MultiTesterFile;
 use MultiTester\Traits\ProcStreams;
 use MultiTester\Traits\StorageDirectory;
@@ -107,7 +111,9 @@ class MultiTester
     /**
      * @param array $arguments
      *
+     * @return bool
      * @throws MultiTesterException
+     * @throws ZeroProjectsTestedException
      */
     public function run(array $arguments)
     {
@@ -163,7 +169,7 @@ class MultiTester
     }
 
     /**
-     * @param array|null $directory
+     * @param array|null $directories
      *
      * @throws MultiTesterException
      */
