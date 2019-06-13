@@ -48,7 +48,9 @@ class Summary
     {
         $count = count($this->state);
         if (0 === $count) {
+            // @codeCoverageIgnoreStart
             throw new ZeroProjectsTestedException('No projects tested.');
+            // @codeCoverageIgnoreEnd
         }
         $pad = max(array_map('strlen', array_keys($this->state)));
         $successString = '%s    Success';

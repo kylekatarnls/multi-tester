@@ -65,7 +65,6 @@ try {
     $code = $multiTester->run($argv) ? 0 : 1;
 } catch (ZeroProjectsTestedException $e) {
     showError($e);
-
     if (isset($multiTester) && $multiTester->isVerbose()) {
 
         echo ' Check you have projects in your config file: ' . $multiTester->getMultiTesterFile(). "\n\n";
