@@ -61,7 +61,7 @@ class Config
      * Config constructor.
      *
      * @param MultiTester $multiTester
-     * @param array $arguments
+     * @param array       $arguments
      *
      * @throws ConfigFileNotFoundException
      * @throws MultiTesterException
