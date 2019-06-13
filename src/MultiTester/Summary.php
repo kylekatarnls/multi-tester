@@ -42,8 +42,9 @@ class Summary
     }
 
     /**
-     * @return string
      * @throws ZeroProjectsTestedException
+     *
+     * @return string
      */
     public function get()
     {
