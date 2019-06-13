@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 class SummaryTest extends TestCase
 {
     /**
-     * @throws \MultiTester\MultiTesterException
+     * @throws \MultiTester\Exceptions\MultiTesterException
      */
     public function testColor()
     {
@@ -32,7 +32,7 @@ class SummaryTest extends TestCase
     }
 
     /**
-     * @throws \MultiTester\MultiTesterException
+     * @throws \MultiTester\Exceptions\MultiTesterException
      */
     public function testIsSuccessful()
     {
@@ -56,7 +56,7 @@ class SummaryTest extends TestCase
     }
 
     /**
-     * @throws \MultiTester\MultiTesterException
+     * @throws \MultiTester\Exceptions\MultiTesterException
      */
     public function testGet()
     {

@@ -10,7 +10,7 @@ use PHPUnit\Framework\TestCase;
 class ConfigTest extends TestCase
 {
     /**
-     * @throws \MultiTester\MultiTesterException
+     * @throws \MultiTester\Exceptions\MultiTesterException
      */
     public function testVerbose()
     {
@@ -26,7 +26,7 @@ class ConfigTest extends TestCase
     }
 
     /**
-     * @throws \MultiTester\MultiTesterException
+     * @throws \MultiTester\Exceptions\MultiTesterException
      */
     public function testGetConfig()
     {
@@ -40,7 +40,7 @@ class ConfigTest extends TestCase
     }
 
     /**
-     * @throws \MultiTester\MultiTesterException
+     * @throws \MultiTester\Exceptions\MultiTesterException
      */
     public function testAddProjects()
     {
@@ -71,7 +71,7 @@ class ConfigTest extends TestCase
     }
 
     /**
-     * @expectedException        \MultiTester\MultiTesterException
+     * @expectedException        \MultiTester\Exceptions\ConfigFileNotFoundException
      * @expectedExceptionMessage Multi-tester config file 'does-not-exists' not found.
      */
     public function testMissingConfigFile()
@@ -82,7 +82,7 @@ class ConfigTest extends TestCase
     }
 
     /**
-     * @expectedException        \MultiTester\MultiTesterException
+     * @expectedException        \MultiTester\Exceptions\MultiTesterException
      * @expectedExceptionMessage Set the 'directory' entry to a path containing a composer.json file.
      */
     public function testMissingComposerFile()
@@ -93,7 +93,7 @@ class ConfigTest extends TestCase
     }
 
     /**
-     * @expectedException        \MultiTester\MultiTesterException
+     * @expectedException        \MultiTester\Exceptions\MultiTesterException
      * @expectedExceptionMessage The composer.json file must contains a 'name' entry.
      */
     public function testMissingProjectName()

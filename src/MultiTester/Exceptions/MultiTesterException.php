@@ -1,6 +1,6 @@
 <?php
 
-namespace MultiTester;
+namespace MultiTester\Exceptions;
 
 use Exception;
 

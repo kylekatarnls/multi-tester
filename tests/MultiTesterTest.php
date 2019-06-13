@@ -4,8 +4,8 @@ namespace MultiTester\Tests;
 
 use MultiTester\Config;
 use MultiTester\Directory;
+use MultiTester\Exceptions\MultiTesterException;
 use MultiTester\MultiTester;
-use MultiTester\MultiTesterException;
 use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
 
@@ -118,7 +118,40 @@ class MultiTesterTest extends TestCase
             $message = $exception->getMessage();
         }
 
-        $this->assertRegExp('/Multi-tester config file \'[^\']+\/project\/not-found\/\.multi-tester\.yml\' not found./', $message);
+        $this->assertRegExp(
+            '/Multi-tester config file \'[^\']+\/project\/not-found\/\.multi-tester\.yml\' not found./',
+            $message
+        );
+    }
+
+    /**
+     * @throws \ReflectionException
+     */
+    public function testGetConfigWhileConfigFileIsEmpty()
+    {
+        $tester = new MultiTester();
+
+        $getConfig = new ReflectionMethod($tester, 'getConfig');
+        $getConfig->setAccessible(true);
+
+        /** @var Config $config */
+        $config = $getConfig->invoke($tester, ['foo', __DIR__ . '/project/.multi-tester-empty.yml']);
+
+        $this->assertInstanceOf('MultiTester\Config', $config);
+        $this->assertSame('my-org/my-project', $config->packageName);
+
+        $message = null;
+
+        try {
+            $getConfig->invoke($tester, ['foo', __DIR__ . '/project/not-found/.multi-tester-empty.yml']);
+        } catch (MultiTesterException $exception) {
+            $message = $exception->getMessage();
+        }
+
+        $this->assertRegExp(
+            '/Multi-tester config file \'[^\']+\/project\/not-found\/\.multi-tester-empty\.yml\' not found./',
+            $message
+        );
     }
 
     /**
