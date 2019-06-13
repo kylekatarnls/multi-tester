@@ -134,6 +134,5 @@ class SummaryTest extends TestCase
             '',
             '1 / 2     1 project broken by current changes.',
         ]), trim($summary->get()));
-
     }
 }
