@@ -43,7 +43,8 @@ function showError(\Exception $e)
         $errorString = " \033[41;1;97m  ERROR  \033[0m\033[31m {$e->getMessage()} \033[0m";
     }
 
-    echo "\n" . $errorString . "\n";
+    echo "\n" . $errorString . "\n\n";
+
 }
 
 
@@ -62,17 +63,26 @@ if (!getLoader()) {
 try {
     $multiTester = new MultiTester();
     $code = $multiTester->run($argv) ? 0 : 1;
-} catch (ConfigFileNotFoundException $e) {
-    showError($e);
-    exit(1);
 } catch (ZeroProjectsTestedException $e) {
     showError($e);
-    if (isset($multiTester) && $multiTester->isVerbose()) { // is verbose
-        echo $e->getTraceAsString();
+
+    if (isset($multiTester) && $multiTester->isVerbose()) {
+
+        echo ' Check you have projects in your config file: ' . $multiTester->getMultiTesterFile(). "\n\n";
+
+        echo "Trace:\n";
+        echo $e->getTraceAsString() . "\n\n";
+    } else {
+        echo ' Use --verbose option to get more details.' . "\n\n";
     }
     exit(1);
-} catch (MultiTesterException $e) {
+}
+catch (MultiTesterException $e) {
     showError($e);
+    if (isset($multiTester) && $multiTester->isVerbose()) {
+        echo "Trace:\n";
+        echo $e->getTraceAsString() . "\n\n";
+    }
     exit(1);
 }
 exit($code);
