@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 class SummaryTest extends TestCase
 {
     /**
-     * @throws \MultiTester\MultiTesterException
+     * @throws \MultiTester\Exceptions\MultiTesterException
      */
     public function testColor()
     {
@@ -32,7 +32,7 @@ class SummaryTest extends TestCase
     }
 
     /**
-     * @throws \MultiTester\MultiTesterException
+     * @throws \MultiTester\Exceptions\MultiTesterException
      */
     public function testIsSuccessful()
     {
@@ -56,7 +56,7 @@ class SummaryTest extends TestCase
     }
 
     /**
-     * @throws \MultiTester\MultiTesterException
+     * @throws \MultiTester\Exceptions\MultiTesterException
      */
     public function testGet()
     {
@@ -112,6 +112,27 @@ class SummaryTest extends TestCase
             "\033[42;97m baz    Success \033[0m",
             '',
             "\033[42;97m 2 / 2     No project broken by current changes. \033[0m",
+        ]), trim($summary->get()));
+    }
+
+    /**
+     * @expectedException        \MultiTester\Exceptions\ZeroProjectsTestedException
+     * @expectedExceptionMessage No projects tested.
+     *
+     * @throws \MultiTester\Exceptions\MultiTesterException
+     */
+    public function testGetWhenStateIsEmpty()
+    {
+        $config = [
+            'color_support' => false,
+        ];
+        $summary = new Summary([], $config);
+
+        $this->assertSame(implode("\n", [
+            'a      Success',
+            'baz    > Failure!',
+            '',
+            '1 / 2     1 project broken by current changes.',
         ]), trim($summary->get()));
     }
 }

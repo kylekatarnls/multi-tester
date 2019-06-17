@@ -4,17 +4,17 @@ namespace MultiTester\Tests;
 
 use MultiTester\Config;
 use MultiTester\Directory;
+use MultiTester\Exceptions\MultiTesterException;
+use MultiTester\Exceptions\TestFailedException;
 use MultiTester\MultiTester;
-use MultiTester\MultiTesterException;
 use MultiTester\Project;
-use MultiTester\TestFailedException;
 use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
 
 class ProjectTest extends TestCase
 {
     /**
-     * @throws \MultiTester\MultiTesterException
+     * @throws \MultiTester\Exceptions\MultiTesterException
      */
     public function testGetSettings()
     {
@@ -45,7 +45,7 @@ class ProjectTest extends TestCase
     }
 
     /**
-     * @throws \MultiTester\MultiTesterException
+     * @throws \MultiTester\Exceptions\MultiTesterException
      */
     public function testGetConfig()
     {
@@ -61,7 +61,7 @@ class ProjectTest extends TestCase
     }
 
     /**
-     * @throws \MultiTester\MultiTesterException
+     * @throws \MultiTester\Exceptions\MultiTesterException
      */
     public function testGetPackage()
     {
@@ -77,7 +77,7 @@ class ProjectTest extends TestCase
     }
 
     /**
-     * @throws \MultiTester\MultiTesterException
+     * @throws \MultiTester\Exceptions\MultiTesterException
      * @throws \ReflectionException
      */
     public function testGetScript()
@@ -99,7 +99,7 @@ class ProjectTest extends TestCase
     }
 
     /**
-     * @throws \MultiTester\MultiTesterException
+     * @throws \MultiTester\Exceptions\MultiTesterException
      * @throws \ReflectionException
      */
     public function testGetTries()
@@ -129,7 +129,7 @@ class ProjectTest extends TestCase
     }
 
     /**
-     * @throws \MultiTester\MultiTesterException
+     * @throws \MultiTester\Exceptions\MultiTesterException
      */
     public function testClone()
     {
@@ -173,7 +173,7 @@ class ProjectTest extends TestCase
     }
 
     /**
-     * @throws \MultiTester\MultiTesterException
+     * @throws \MultiTester\Exceptions\MultiTesterException
      */
     public function testInstall()
     {
@@ -217,7 +217,7 @@ class ProjectTest extends TestCase
     }
 
     /**
-     * @throws \MultiTester\MultiTesterException
+     * @throws \MultiTester\Exceptions\MultiTesterException
      */
     public function testTest()
     {
@@ -277,7 +277,7 @@ class ProjectTest extends TestCase
 
     /**
      * @throws \ReflectionException
-     * @throws MultiTesterException
+     * @throws \MultiTester\Exceptions\MultiTesterException
      */
     public function testFilterVersion()
     {
@@ -374,7 +374,7 @@ class ProjectTest extends TestCase
     }
 
     /**
-     * @expectedException        \MultiTester\MultiTesterException
+     * @expectedException        \MultiTester\Exceptions\MultiTesterException
      * @expectedExceptionMessage Source not found for pug-php/pug, you must provide it manually via a 'source' entry.
      *
      * @throws \ReflectionException
@@ -393,7 +393,7 @@ class ProjectTest extends TestCase
     }
 
     /**
-     * @expectedException        \MultiTester\MultiTesterException
+     * @expectedException        \MultiTester\Exceptions\MultiTesterException
      * @expectedExceptionMessage Git source supported only for now, you should provide a manual 'clone' command instead.
      *
      * @throws \ReflectionException
@@ -417,7 +417,7 @@ class ProjectTest extends TestCase
     }
 
     /**
-     * @expectedException        \MultiTester\MultiTesterException
+     * @expectedException        \MultiTester\Exceptions\MultiTesterException
      * @expectedExceptionMessage Source malformed, it should contains at least 'type' and 'url' entries.
      *
      * @throws \ReflectionException
@@ -441,7 +441,7 @@ class ProjectTest extends TestCase
 
     /**
      * @throws \ReflectionException
-     * @throws MultiTesterException
+     * @throws \MultiTester\Exceptions\MultiTesterException
      */
     public function testSeedCloneSetting()
     {
@@ -473,7 +473,7 @@ class ProjectTest extends TestCase
 
     /**
      * @throws \ReflectionException
-     * @throws MultiTesterException
+     * @throws \MultiTester\Exceptions\MultiTesterException
      */
     public function testInstallCloneSetting()
     {
@@ -539,7 +539,7 @@ class ProjectTest extends TestCase
 
     /**
      * @throws \ReflectionException
-     * @throws MultiTesterException
+     * @throws \MultiTester\Exceptions\MultiTesterException
      */
     public function testSeedScriptSetting()
     {

@@ -3,6 +3,8 @@
 namespace MultiTester;
 
 use Composer\Semver\Semver;
+use MultiTester\Exceptions\MultiTesterException;
+use MultiTester\Exceptions\TestFailedException;
 
 class Project
 {
