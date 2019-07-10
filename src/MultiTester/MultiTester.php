@@ -82,7 +82,7 @@ class MultiTester
         $bar = str_repeat('*', $width);
 
         $text = implode("\n", array_map(function ($line) use ($width) {
-            return '*'.str_pad($line, $width - 2, ' ', STR_PAD_BOTH).'*';
+            return '*' . str_pad($line, $width - 2, ' ', STR_PAD_BOTH) . '*';
         }, $lines));
 
         $this->info("$bar\n$text\n$bar\n");
@@ -148,14 +148,14 @@ class MultiTester
 
         $summary = new Summary($state, $config->config);
 
-        $this->output("\n\n".$summary->get());
+        $this->output("\n\n" . $summary->get());
 
         return $summary->isSuccessful();
     }
 
     protected function displayError(Exception $exception)
     {
-        $errorString = 'ERROR:'.$exception->getMessage();
+        $errorString = 'ERROR:' . $exception->getMessage();
 
         if ($this->getConfig()->co) {
             $errorString = " \033[41;1;97m  ERROR  \033[0m\033[31m {$exception->getMessage()} \033[0m";
@@ -165,10 +165,10 @@ class MultiTester
 
         if ($this->isVerbose()) {
             $this->output(
-                ' Check you have projects in your config file: '.$this->getMultiTesterFile()."\n\n".
-                'Trace:\n'.
-                $exception->getFile().':'.$exception->getLine()."\n\n".
-                $exception->getTraceAsString()."\n\n"
+                ' Check you have projects in your config file: ' . $this->getMultiTesterFile() . "\n\n" .
+                'Trace:\n' .
+                $exception->getFile() . ':' . $exception->getLine() . "\n\n" .
+                $exception->getTraceAsString() . "\n\n"
             );
 
             return;
@@ -190,9 +190,11 @@ class MultiTester
             return $this->runRaw($arguments);
         } catch (ZeroProjectsTestedException $exception) {
             $this->displayError($exception);
+
             return false;
         } catch (MultiTesterException $exception) {
             $this->displayError($exception);
+
             return false;
         }
     }
@@ -200,9 +202,9 @@ class MultiTester
     /**
      * @param array $arguments
      *
-     * @return Config
      * @throws MultiTesterException
      *
+     * @return Config
      */
     protected function getConfig(array $arguments)
     {
@@ -222,7 +224,7 @@ class MultiTester
      */
     protected function prepareWorkingDirectory(&$directories = null)
     {
-        $directory = $this->getStorageDirectory().'/multi-tester-'.mt_rand(0, 9999999);
+        $directory = $this->getStorageDirectory() . '/multi-tester-' . mt_rand(0, 9999999);
         $this->info("working directory: $directory\n");
         $this->setWorkingDirectory($directory);
         $directory = $this->getWorkingDirectory();
@@ -232,7 +234,7 @@ class MultiTester
         }
 
         if (!(new Directory($directory))->create()) {
-            $this->error('Cannot create temporary directory, check you have write access to '.$this->getStorageDirectory());
+            $this->error('Cannot create temporary directory, check you have write access to ' . $this->getStorageDirectory());
         }
 
         if (!chdir($directory)) {
