@@ -166,10 +166,13 @@ class Config
         if (!file_exists($this->composerFile)) {
             throw new MultiTesterException("Set the 'directory' entry to a path containing a composer.json file.");
         }
+
         $this->data = new File($this->composerFile);
+
         if (!isset($this->data['name'])) {
             throw new MultiTesterException("The composer.json file must contains a 'name' entry.");
         }
+
         $this->packageName = $this->data['name'];
     }
 }

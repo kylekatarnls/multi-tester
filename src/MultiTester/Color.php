@@ -16,8 +16,7 @@ class Color
                 'ON' === getenv('ConEmuANSI') ||
                 false !== getenv('BABUN_HOME')
                 : (false !== getenv('BABUN_HOME')) ||
-                (function_exists('posix_isatty') &&
-                    @posix_isatty(STDOUT));
+                (function_exists('posix_isatty') && @posix_isatty(STDOUT));
         // @codeCoverageIgnoreEnd
     }
 }
