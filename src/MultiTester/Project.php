@@ -208,7 +208,7 @@ class Project
         if (!isset($settings['clone'])) {
             $this->seedSourceSetting($settings);
             $this->checkSourceSetting($settings);
-            $settings['clone'] = ['git clone ' . $settings['source']['url'] . ' .'];
+            $settings['clone'] = ['git clone ' . $settings['source']['url'] . ' .'.($this->config->quiet ? ' --quiet' : '')];
 
             if (isset($settings['source']['reference'])) {
                 $settings['clone'][] = 'git checkout ' . $settings['source']['reference'];
@@ -249,7 +249,7 @@ class Project
      */
     protected function seedInstallSetting(&$settings)
     {
-        $this->seedSetting($settings, 'install', 'install script', 'composer install --no-interaction');
+        $this->seedSetting($settings, 'install', 'install script', 'composer install --no-interaction'.($this->config->quiet ? ' --quiet' : ''));
     }
 
     /**
@@ -267,14 +267,17 @@ class Project
     {
         $settings = $this->getSettings();
         $package = $this->getPackage();
-        $tester = $this->getConfig()->getTester();
+        $config = $this->getConfig();
+        $tester = $config->getTester();
 
         $this->seedCloneSetting($settings);
 
         (new Directory('.'))->clean();
         $tester->info("empty current directory\n");
 
-        $tester->framedInfo("Cloning $package");
+        if (!$config->quiet) {
+            $tester->framedInfo("Cloning $package");
+        }
 
         if (!$tester->exec($settings['clone'])) {
             throw new MultiTesterException("Cloning $package failed.");
@@ -296,7 +299,9 @@ class Project
 
         $this->seedInstallSetting($settings);
 
-        $tester->framedInfo("Installing $package");
+        if (!$config->quiet) {
+            $tester->framedInfo("Installing $package");
+        }
 
         if (!$tester->exec($settings['install'])) {
             throw new MultiTesterException("Installing $package failed.");

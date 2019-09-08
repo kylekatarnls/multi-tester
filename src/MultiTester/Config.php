@@ -50,6 +50,11 @@ class Config
     public $verbose;
 
     /**
+     * @var bool
+     */
+    public $quiet;
+
+    /**
      * @var string[]
      */
     public $adds = [];
@@ -67,6 +72,7 @@ class Config
         $arguments = $this->filterArguments($arguments, '--add');
         $this->tester = $multiTester;
         $this->verbose = in_array('--verbose', $arguments) || in_array('-v', $arguments);
+        $this->quiet = in_array('--quiet-install', $arguments) || in_array('-q', $arguments);
         $arguments = array_filter($arguments, function ($argument) {
             return $argument !== '--verbose' && $argument !== '-v';
         });
