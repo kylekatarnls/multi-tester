@@ -7,14 +7,18 @@ env:
   global:
     - CC_TEST_REPORTER_ID=40ba8fd3a4053f9b138e5aef90125753a66a6fb9c6317a4cb9daf36aa11425c6
 
-php:
-  - 5.4
-  - 5.5
-  - 5.6
-  - 7.0
-  - 7.1
-  - 7.2
-  - 7.3
+matrix:
+  include:
+    - php: 5.4
+      dist: trusty
+    - php: 5.5
+      dist: trusty
+    - php: 5.6
+    - php: 7.0
+    - php: 7.1
+    - php: 7.2
+    - php: 7.3
+    - php: 7.4snapshot
 
 before_script:
   - travis_retry composer self-update
