@@ -28,7 +28,7 @@ class MultiTester
         $this->storageDirectory = $storageDirectory ?: sys_get_temp_dir();
     }
 
-    public function exec($command, $quiet)
+    public function exec($command, $quiet = false)
     {
         return is_array($command)
             ? $this->execCommands($command, $quiet)
@@ -226,7 +226,7 @@ class MultiTester
         }
     }
 
-    protected function execCommand($command, $quiet)
+    protected function execCommand($command, $quiet = false)
     {
         $command = trim(preg_replace('/^\s*travis_retry\s/', '', $command));
 
@@ -255,7 +255,7 @@ class MultiTester
         return proc_close($process) === 0 || $status['exitcode'] === 0;
     }
 
-    protected function execCommands($commands, $quiet)
+    protected function execCommands($commands, $quiet = false)
     {
         foreach ($commands as $command) {
             if (!$this->execCommand($command, $quiet)) {
