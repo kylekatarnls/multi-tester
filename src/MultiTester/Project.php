@@ -211,7 +211,7 @@ class Project
             $settings['clone'] = ['git clone ' . $settings['source']['url'] . ' .'.($this->config->quiet ? ' --quiet' : '')];
 
             if (isset($settings['source']['reference'])) {
-                $settings['clone'][] = 'git checkout ' . $settings['source']['reference'];
+                $settings['clone'][] = 'git checkout ' . $settings['source']['reference'].($this->config->quiet ? ' --quiet' : '');
             }
         }
 
@@ -273,13 +273,13 @@ class Project
         $this->seedCloneSetting($settings);
 
         (new Directory('.'))->clean();
-        $tester->info("empty current directory\n");
 
         if (!$config->quiet) {
+            $tester->info("empty current directory\n");
             $tester->framedInfo("Cloning $package");
         }
 
-        if (!$tester->exec($settings['clone'])) {
+        if (!$tester->exec($settings['clone'], $config->quiet)) {
             throw new MultiTesterException("Cloning $package failed.");
         }
     }
@@ -294,7 +294,10 @@ class Project
         $config = $this->getConfig();
         $tester = $config->getTester();
 
-        $tester->info("clear travis cache.\n");
+        if (!$config->quiet) {
+            $tester->info("clear travis cache.\n");
+        }
+
         $tester->clearTravisSettingsCache();
 
         $this->seedInstallSetting($settings);
@@ -303,7 +306,7 @@ class Project
             $tester->framedInfo("Installing $package");
         }
 
-        if (!$tester->exec($settings['install'])) {
+        if (!$tester->exec($settings['install'], $config->quiet)) {
             throw new MultiTesterException("Installing $package failed.");
         }
     }

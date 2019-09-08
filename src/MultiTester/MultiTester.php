@@ -28,11 +28,11 @@ class MultiTester
         $this->storageDirectory = $storageDirectory ?: sys_get_temp_dir();
     }
 
-    public function exec($command)
+    public function exec($command, $quiet)
     {
         return is_array($command)
-            ? $this->execCommands($command)
-            : $this->execCommand($command);
+            ? $this->execCommands($command, $quiet)
+            : $this->execCommand($command, $quiet);
     }
 
     public function getComposerSettings($package)
@@ -226,11 +226,13 @@ class MultiTester
         }
     }
 
-    protected function execCommand($command)
+    protected function execCommand($command, $quiet)
     {
         $command = trim(preg_replace('/^\s*travis_retry\s/', '', $command));
 
-        $this->output("> $command\n");
+        if (!$quiet) {
+            $this->output("> $command\n");
+        }
 
         $pipes = [];
         $process = @proc_open($command, $this->getProcStreams(), $pipes, $this->getWorkingDirectory());
@@ -246,15 +248,17 @@ class MultiTester
             $status = proc_get_status($process);
         }
 
-        $this->output("\n");
+        if (!$quiet) {
+            $this->output("\n");
+        }
 
         return proc_close($process) === 0 || $status['exitcode'] === 0;
     }
 
-    protected function execCommands($commands)
+    protected function execCommands($commands, $quiet)
     {
         foreach ($commands as $command) {
-            if (!$this->execCommand($command)) {
+            if (!$this->execCommand($command, $quiet)) {
                 return false;
             }
         }
