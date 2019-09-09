@@ -1,0 +1,6 @@
+{
+  "name": "my-org/my-project",
+  "replace": {
+    "my-org/other-project": "self.version"
+  }
+}

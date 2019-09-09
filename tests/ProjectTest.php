@@ -602,4 +602,57 @@ class ProjectTest extends TestCase
 
         @unlink($buffer);
     }
+
+    /**
+     * @throws \ReflectionException
+     * @throws MultiTesterException
+     */
+    public function testRemoveReplacedPackages()
+    {
+        chdir(__DIR__ . '/project2');
+
+        $tester = new MultiTester();
+        $buffer = sys_get_temp_dir() . '/test-' . mt_rand(0, 99999);
+        $tester->setProcStreams([
+            ['file', 'php://stdin', 'r'],
+            ['file', $buffer, 'a'],
+            ['file', $buffer, 'a'],
+        ]);
+        $config = new Config($tester, [__DIR__ . '/../bin/multi-tester']);
+        $project = new Project('pug-php/pug', $config, []);
+
+        chdir(sys_get_temp_dir());
+        $dir = 'multi-tester-' . mt_rand(0, 999999);
+        $projectDir = 'vendor/my-org/other-project';
+        mkdir("$dir/$projectDir", 0777, true);
+        chdir($dir);
+
+        $this->assertDirectoryExists($projectDir);
+
+        $removeReplacedPackages = new ReflectionMethod($project, 'removeReplacedPackages');
+        $removeReplacedPackages->setAccessible(true);
+        $removeReplacedPackages->invoke($project);
+
+        $this->assertDirectoryNotExists($projectDir);
+
+        chdir(sys_get_temp_dir());
+        (new Directory($dir))->remove();
+
+        chdir(__DIR__ . '/project');
+
+        $tester = new MultiTester();
+        $buffer = sys_get_temp_dir() . '/test-' . mt_rand(0, 99999);
+        $tester->setProcStreams([
+            ['file', 'php://stdin', 'r'],
+            ['file', $buffer, 'a'],
+            ['file', $buffer, 'a'],
+        ]);
+        $config = new Config($tester, [__DIR__ . '/../bin/multi-tester']);
+        $project = new Project('pug-php/pug', $config, []);
+
+        $removeReplacedPackages = new ReflectionMethod($project, 'removeReplacedPackages');
+        $removeReplacedPackages->setAccessible(true);
+
+        $this->assertNull($removeReplacedPackages->invoke($project));
+    }
 }

@@ -1,0 +1,74 @@
+phug/compiler:
+  - git clone https://github.com/phug-php/compiler.git .
+  - composer install
+  - vendor/bin/phpunit -c ./vendor/phug/dev-tool/config/
+
+phug/renderer:
+  - git clone https://github.com/phug-php/renderer.git .
+  - composer install
+  - vendor/bin/phpunit -c ./vendor/phug/dev-tool/config/
+
+phug/phug:
+  - git clone https://github.com/phug-php/phug.git .
+  - composer install
+  - vendor/bin/phpunit -c ./vendor/phug/dev-tool/config/
+
+phug/formatter:
+  - git clone https://github.com/phug-php/formatter.git .
+  - composer install
+  - vendor/bin/phpunit -c ./vendor/phug/dev-tool/config/
+
+pug-php/pug:
+  - git clone https://github.com/pug-php/pug.git .
+  - composer install
+  - vendor/bin/phpunit
+
+pug/bemto:
+  - git clone https://github.com/phug-php/bemto.git .
+  - composer install
+  - vendor/bin/phpunit
+
+pug-php/pug-phalcon:
+  - git clone https://github.com/pug-php/pug-phalcon.git .
+  - composer install
+  - vendor/bin/phpunit
+
+pug-php/pug-symfony:
+  - git clone https://github.com/pug-php/pug-symfony.git .
+  - composer install
+  - vendor/bin/phpunit
+
+pug-php/pug-assets:
+  - git clone https://github.com/pug-php/pug-assets.git .
+  - composer install
+  - vendor/bin/phpunit
+
+pug-php/pug-minify:
+  - git clone https://github.com/pug-php/pug-minify.git .
+  - composer install
+  - vendor/bin/phpunit
+
+pug/slim:
+  - git clone https://github.com/pug-php/pug-slim.git .
+  - composer install
+  - vendor/bin/phpunit
+
+pug/twig:
+  - git clone https://github.com/pug-php/twig.git .
+  - composer install
+  - vendor/bin/phpunit
+
+ci-pug/ci-pug:
+  - git clone https://github.com/pug-php/ci-pug-engine.git .
+  - composer install
+  - vendor/bin/phpunit
+
+bkwld/laravel-pug:
+  - git clone https://github.com/BKWLD/laravel-pug.git .
+  - composer install
+  - vendor/bin/phpunit
+
+pug/yii2:
+  - git clone https://github.com/pug-php/pug-yii2.git .
+  - composer install
+  - vendor/bin/phpunit

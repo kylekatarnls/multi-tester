@@ -221,10 +221,10 @@ class Project
         if (!isset($settings['clone'])) {
             $this->seedSourceSetting($settings);
             $this->checkSourceSetting($settings);
-            $settings['clone'] = ['git clone ' . $settings['source']['url'] . ' .'.($this->config->quiet ? ' --quiet' : '')];
+            $settings['clone'] = ['git clone ' . $settings['source']['url'] . ' .' . ($this->config->quiet ? ' --quiet' : '')];
 
             if (isset($settings['source']['reference'])) {
-                $settings['clone'][] = 'git checkout ' . $settings['source']['reference'].($this->config->quiet ? ' --quiet' : '');
+                $settings['clone'][] = 'git checkout ' . $settings['source']['reference'] . ($this->config->quiet ? ' --quiet' : '');
             }
         }
 
@@ -262,7 +262,7 @@ class Project
      */
     protected function seedInstallSetting(&$settings)
     {
-        $this->seedSetting($settings, 'install', 'install script', 'composer install --no-interaction'.($this->config->quiet ? ' --quiet' : ''));
+        $this->seedSetting($settings, 'install', 'install script', 'composer install --no-interaction' . ($this->config->quiet ? ' --quiet' : ''));
     }
 
     /**
