@@ -79,6 +79,19 @@ class Project
         return $this->exec();
     }
 
+    public function removeReplacedPackages()
+    {
+        if (!isset($this->config->data['replace'])) {
+            return;
+        }
+
+        $replace = (array) $this->config->data['replace'];
+
+        foreach ($replace as $package => $version) {
+            (new Directory('vendor/' . $package))->remove();
+        }
+    }
+
     protected function getScript($script)
     {
         $script = is_array($script) ? $script : [$script];
@@ -322,6 +335,8 @@ class Project
         $package = $this->getPackage();
         $config = $this->getConfig();
         $tester = $config->getTester();
+
+        $this->removeReplacedPackages();
 
         (new Directory($config->projectDirectory))->copy('vendor/' . $config->packageName, ['.git', 'vendor']);
 

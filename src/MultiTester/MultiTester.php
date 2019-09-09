@@ -108,6 +108,8 @@ class MultiTester
      * @param array $arguments
      *
      * @throws MultiTesterException
+     *
+     * @return bool
      */
     public function run(array $arguments)
     {
@@ -153,6 +155,8 @@ class MultiTester
      */
     protected function getConfig(array $arguments)
     {
+        $config = null;
+
         try {
             $config = new Config($this, $arguments);
         } catch (MultiTesterException $exception) {
@@ -163,7 +167,7 @@ class MultiTester
     }
 
     /**
-     * @param array|null $directory
+     * @param array|null $directories
      *
      * @throws MultiTesterException
      */
