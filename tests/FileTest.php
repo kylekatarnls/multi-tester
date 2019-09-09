@@ -14,7 +14,7 @@ class FileTest extends TestCase
         ], (new File(__DIR__ . '/project/composer.json'))->toArray());
 
         $this->assertSame([
-            'name' => 'my-org/my-project',
+            'name'    => 'my-org/my-project',
             'replace' => [
                 'my-org/other-project' => 'self.version',
             ],
