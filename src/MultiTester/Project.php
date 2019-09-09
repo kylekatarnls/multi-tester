@@ -260,6 +260,14 @@ class Project
     /**
      * @param array $settings
      */
+    protected function seedAutoloadSetting(&$settings)
+    {
+        $this->seedSetting($settings, 'autoload', 'autoload build script', 'composer dump-autoload' . ($this->config->quiet ? ' --quiet' : ''));
+    }
+
+    /**
+     * @param array $settings
+     */
     protected function seedInstallSetting(&$settings)
     {
         $this->seedSetting($settings, 'install', 'install script', 'composer install --no-interaction' . ($this->config->quiet ? ' --quiet' : ''));
@@ -325,7 +333,24 @@ class Project
     }
 
     /**
-     * @throws TestFailedException
+     * @throws MultiTesterException
+     */
+    protected function autoload()
+    {
+        $settings = $this->getSettings();
+        $package = $this->getPackage();
+        $config = $this->getConfig();
+        $tester = $config->getTester();
+
+        $this->seedAutoloadSetting($settings);
+
+        if (!$tester->exec($settings['autoload'], $config->quiet)) {
+            throw new MultiTesterException("Building autoloader of $package failed.");
+        }
+    }
+
+    /**
+     * @throws MultiTesterException|TestFailedException
      *
      * @return bool
      */
@@ -339,6 +364,8 @@ class Project
         $this->removeReplacedPackages();
 
         (new Directory($config->projectDirectory))->copy('vendor/' . $config->packageName, ['.git', 'vendor']);
+
+        $this->autoload();
 
         $this->seedScriptSetting($settings);
 
