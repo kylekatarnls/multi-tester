@@ -627,13 +627,13 @@ class ProjectTest extends TestCase
         mkdir("$dir/$projectDir", 0777, true);
         chdir($dir);
 
-        $this->assertDirectoryExists($projectDir);
+        $this->assertTrue(is_dir($projectDir));
 
         $removeReplacedPackages = new ReflectionMethod($project, 'removeReplacedPackages');
         $removeReplacedPackages->setAccessible(true);
         $removeReplacedPackages->invoke($project);
 
-        $this->assertDirectoryNotExists($projectDir);
+        $this->assertFalse(is_dir($projectDir));
 
         chdir(sys_get_temp_dir());
         (new Directory($dir))->remove();
