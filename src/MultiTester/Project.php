@@ -266,7 +266,7 @@ class Project
             $settings,
             'autoload',
             'autoload build script',
-            'composer dump-autoload --no-interaction' . ($this->config->quiet ? ' --quiet' : '')
+            'composer dump-autoload --optimize --no-interaction' . ($this->config->quiet ? ' --quiet' : '')
         );
     }
 
