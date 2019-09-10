@@ -262,7 +262,12 @@ class Project
      */
     protected function seedAutoloadSetting(&$settings)
     {
-        $this->seedSetting($settings, 'autoload', 'autoload build script', 'composer dump-autoload' . ($this->config->quiet ? ' --quiet' : ''));
+        $this->seedSetting(
+            $settings,
+            'autoload',
+            'autoload build script',
+            'composer dump-autoload --no-interaction' . ($this->config->quiet ? ' --quiet' : '')
+        );
     }
 
     /**
@@ -270,7 +275,12 @@ class Project
      */
     protected function seedInstallSetting(&$settings)
     {
-        $this->seedSetting($settings, 'install', 'install script', 'composer install --no-interaction' . ($this->config->quiet ? ' --quiet' : ''));
+        $this->seedSetting(
+            $settings,
+            'install',
+            'install script',
+            'composer install --no-interaction' . ($this->config->quiet ? ' --quiet' : '')
+        );
     }
 
     /**
@@ -278,7 +288,12 @@ class Project
      */
     protected function seedScriptSetting(&$settings)
     {
-        $this->seedSetting($settings, 'script', 'script', 'vendor/bin/phpunit --no-coverage');
+        $this->seedSetting(
+            $settings,
+            'script',
+            'script',
+            'vendor/bin/phpunit --no-coverage'
+        );
     }
 
     /**

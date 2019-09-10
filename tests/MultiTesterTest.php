@@ -400,9 +400,10 @@ class MultiTesterTest extends TestCase
         $state = true;
         $package = 'pug-php/pug';
         $settings = [
-            'clone'   => $exit0,
-            'install' => $exit0,
-            'script'  => $exit0,
+            'clone'    => $exit0,
+            'install'  => $exit0,
+            'autoload' => $exit0,
+            'script'   => $exit0,
         ];
 
         $testProject->invokeArgs($tester, [$package, $config, $settings, &$state]);
@@ -410,12 +411,13 @@ class MultiTesterTest extends TestCase
         @unlink($buffer);
 
         $this->assertTrue($state);
-        $this->assertSame("> $exit0\nSuccess command\n\n> $exit0\nSuccess command\n\n> $exit0\nSuccess command\n\n", $output);
+        $this->assertSame(str_repeat("> $exit0\nSuccess command\n\n", 4), $output);
 
         $settings = [
-            'clone'   => $exit0,
-            'install' => $exit0,
-            'script'  => $exit1,
+            'clone'    => $exit0,
+            'install'  => $exit0,
+            'autoload' => $exit0,
+            'script'   => $exit1,
         ];
 
         $testProject->invokeArgs($tester, [$package, $config, $settings, &$state]);
@@ -423,14 +425,15 @@ class MultiTesterTest extends TestCase
         @unlink($buffer);
 
         $this->assertFalse($state);
-        $this->assertSame("> $exit0\nSuccess command\n\n> $exit0\nSuccess command\n\n> $exit1\nFailure command\n\n", $output);
+        $this->assertSame(str_repeat("> $exit0\nSuccess command\n\n", 3) . "> $exit1\nFailure command\n\n", $output);
 
         (new Directory($directory))->remove();
 
         $settings = [
-            'clone'   => $exit1,
-            'install' => $exit0,
-            'script'  => $exit0,
+            'clone'    => $exit1,
+            'install'  => $exit0,
+            'autoload' => $exit0,
+            'script'   => $exit0,
         ];
         $message = null;
 
@@ -465,6 +468,7 @@ class MultiTesterTest extends TestCase
             'some-project:',
             "  clone: $exit0",
             "  install: $exit0",
+            "  autoload: $exit0",
             "  script: $exit0",
         ]));
         copy(__DIR__ . '/project/composer.json', 'composer.json');
@@ -484,7 +488,7 @@ class MultiTesterTest extends TestCase
 
         $this->assertTrue($success);
         $this->assertSame(
-            str_repeat("> $exit0\nSuccess command\n\n", 3) .
+            str_repeat("> $exit0\nSuccess command\n\n", 4) .
             "\n\nsome-project    Success\n\n" .
             "1 / 1     No project broken by current changes.\n",
             $output
