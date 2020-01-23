@@ -47,11 +47,11 @@ class DirectoryTest extends TestCase
 
         touch("$testDirectory/dest/foo/bar");
 
-        $this->assertTrue(is_file("$testDirectory/dest/foo/bar"));
+        $this->assertFileExists("$testDirectory/dest/foo/bar");
 
         $this->assertTrue((new Directory("$testDirectory/dest/foo/bar"))->create());
 
-        $this->assertTrue(is_dir("$testDirectory/dest/foo/bar"));
+        $this->assertDirectoryExists("$testDirectory/dest/foo/bar");
 
         touch("$testDirectory/dest/foo/bar/biz");
 

@@ -360,7 +360,7 @@ class ProjectTest extends TestCase
         $settings = [];
         $seedSourceSetting->invokeArgs($project, [&$settings]);
 
-        $this->assertTrue(is_array($settings['source']));
+        $this->assertIsArray($settings['source']);
         $this->assertSame('git', $settings['source']['type']);
         $this->assertSame('https://github.com/pug-php/pug.git', $settings['source']['url']);
 
@@ -491,7 +491,7 @@ class ProjectTest extends TestCase
 
         $clone = $settings['clone'];
 
-        $this->assertTrue(is_array($clone));
+        $this->assertIsArray($clone);
         $this->assertCount(2, $clone);
         $this->assertSame('git clone https://github.com/pug-php/pug.git .', $clone[0]);
         $this->assertRegExp('/^git checkout [0-9a-f]+$/', $clone[1]);
@@ -653,13 +653,13 @@ class ProjectTest extends TestCase
         mkdir("$dir/$projectDir", 0777, true);
         chdir($dir);
 
-        $this->assertTrue(is_dir($projectDir));
+        $this->assertDirectoryExists($projectDir);
 
         $removeReplacedPackages = new ReflectionMethod($project, 'removeReplacedPackages');
         $removeReplacedPackages->setAccessible(true);
         $removeReplacedPackages->invoke($project);
 
-        $this->assertFalse(is_dir($projectDir));
+        $this->assertDirectoryNotExists($projectDir);
 
         chdir(sys_get_temp_dir());
         (new Directory($dir))->remove();

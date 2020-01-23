@@ -174,7 +174,7 @@ class Project
             $package = $this->getPackage();
             $tester = $this->getConfig()->getTester();
             $composerSettings = $tester->getComposerSettings($package);
-            $version = $this->filterVersion($settings['version'], array_keys($composerSettings ?: []));
+            $version = $this->filterVersion($settings['version'], array_keys($composerSettings ?? []));
 
             $settings['source'] = isset($composerSettings[$version]['source'])
                 ? $composerSettings[$version]['source']
