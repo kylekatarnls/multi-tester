@@ -76,7 +76,7 @@ class Config
         $arguments = array_filter($arguments, function ($argument) {
             return $argument !== '--verbose' && $argument !== '-v';
         });
-        $this->configFile = isset($arguments[1]) ? $arguments[1] : $multiTester->getMultiTesterFile();
+        $this->configFile = $arguments[1] ?? $multiTester->getMultiTesterFile();
         $this->addProjects();
 
         if (!file_exists($this->configFile)) {
@@ -157,7 +157,7 @@ class Config
             unset($config['config']);
         }
 
-        $this->projects = isset($config['projects']) ? $config['projects'] : $config;
+        $this->projects = $config['projects'] ?? $config;
     }
 
     /**
@@ -168,10 +168,13 @@ class Config
         if (!file_exists($this->composerFile)) {
             throw new MultiTesterException("Set the 'directory' entry to a path containing a composer.json file.");
         }
+
         $this->data = new File($this->composerFile);
+
         if (!isset($this->data['name'])) {
             throw new MultiTesterException("The composer.json file must contains a 'name' entry.");
         }
+
         $this->packageName = $this->data['name'];
     }
 }

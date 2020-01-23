@@ -17,6 +17,7 @@ class MultiTester
     use StorageDirectory;
     use ProcStreams;
     use Verbose;
+
     /**
      * @var array|File Composer package settings cache.
      */
@@ -29,7 +30,7 @@ class MultiTester
 
     public function __construct($storageDirectory = null)
     {
-        $this->storageDirectory = $storageDirectory ?? sys_get_temp_dir();
+        $this->storageDirectory = $storageDirectory ?: sys_get_temp_dir();
     }
 
     public function exec($command, $quiet = false)
@@ -43,9 +44,7 @@ class MultiTester
     {
         if (!isset($this->composerSettings[$package])) {
             $this->composerSettings[$package] = new File("https://repo.packagist.org/p/$package.json");
-            $this->composerSettings[$package] = isset($this->composerSettings[$package]['packages'], $this->composerSettings[$package]['packages'][$package])
-                ? $this->composerSettings[$package]['packages'][$package]
-                : null;
+            $this->composerSettings[$package] = ($this->composerSettings[$package]['packages'] ?? [])[$package] ?? null;
         }
 
         return $this->composerSettings[$package];
@@ -55,6 +54,7 @@ class MultiTester
     {
         $streams = $this->getProcStreams();
         $stdout = is_array($streams) && isset($streams[1]) ? $streams[1] : null;
+
         if (is_array($stdout) && $stdout[0] === 'file') {
             $file = fopen($stdout[1], $stdout[2]);
             fwrite($file, $text);
@@ -197,7 +197,7 @@ class MultiTester
 
     protected function extractVersion(&$package, &$settings)
     {
-        list($package, $version) = explode(':', "$package:");
+        [$package, $version] = explode(':', "$package:");
 
         if ($version !== '' && !isset($settings['version'])) {
             $settings['version'] = $version;
@@ -226,7 +226,7 @@ class MultiTester
         } catch (TestFailedException $exception) {
             $state = false;
 
-            if (isset($config->config['stop_on_failure']) && $config->config['stop_on_failure']) {
+            if ($config->config['stop_on_failure'] ?? false) {
                 $this->error($exception);
             }
         } catch (MultiTesterException $exception) {

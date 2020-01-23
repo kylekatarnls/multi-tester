@@ -81,6 +81,7 @@ class Directory
     protected function copyItem($source, $destination, $file, &$success)
     {
         $path = "$source/$file";
+
         if (@is_dir($path)) {
             if (!(new static($path))->copy("$destination/$file")) {
                 $success = false;

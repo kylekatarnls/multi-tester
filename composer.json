@@ -23,5 +23,10 @@
             "MultiTester\\": "./src/MultiTester"
         }
     },
-    "bin": ["bin/multi-tester"]
+    "bin": ["bin/multi-tester"],
+    "extra": {
+        "branch-alias": {
+            "dev-master": "2.x-dev"
+        }
+    }
 }

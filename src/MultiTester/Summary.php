@@ -25,10 +25,9 @@ class Summary
      */
     public function isColored()
     {
-        return isset($this->config['color_support'])
-            ? $this->config['color_support']
+        return $this->config['color_support'] ??
             // @codeCoverageIgnoreStart
-            : (DIRECTORY_SEPARATOR === '\\'
+            (DIRECTORY_SEPARATOR === '\\'
                 ? false !== getenv('ANSICON') ||
                 'ON' === getenv('ConEmuANSI') ||
                 false !== getenv('BABUN_HOME')
