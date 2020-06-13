@@ -233,9 +233,6 @@ class Project
 
                     $gitHub = new GitHub($match[1]);
                     $reference = $gitHub->getFirstSuccessfulCommit($reference);
-
-                    var_dump($reference);
-                    exit;
                 }
 
                 $settings['clone'][] = 'git checkout ' . $reference . ($this->config->quiet ? ' --quiet' : '');
