@@ -9,9 +9,15 @@ class Directory
      */
     protected $path;
 
-    public function __construct($path)
+    /**
+     * @var string
+     */
+    private $executor;
+
+    public function __construct($path, $executor = 'shell_exec')
     {
         $this->path = $path;
+        $this->executor = $executor;
     }
 
     public function copy($destination, $exceptions = [])
@@ -45,7 +51,7 @@ class Directory
 
         clearstatcache();
         $arg = escapeshellarg($dir);
-        shell_exec('rm -rf ' . $arg . '/.* 2>&1 && rm -rf ' . $arg . '/* 2>&1');
+        ($this->executor)('rm -rf ' . $arg . '/.* 2>&1 && rm -rf ' . $arg . '/* 2>&1');
         $success = true;
 
         foreach (@scandir($dir) as $file) {

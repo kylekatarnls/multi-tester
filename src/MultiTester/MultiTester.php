@@ -138,7 +138,7 @@ class MultiTester
 
             chdir($cwd);
 
-            (new Directory($this->getWorkingDirectory()))->remove();
+            (new Directory($this->getWorkingDirectory(), $config->executor))->remove();
         }
 
         $this->removeDirectories($directories);

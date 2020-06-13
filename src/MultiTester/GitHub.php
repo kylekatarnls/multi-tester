@@ -4,18 +4,27 @@ namespace MultiTester;
 
 class GitHub
 {
+    /**
+     * @var string
+     */
     private $repo;
 
-    public function __construct(string $repo)
+    /**
+     * @var string
+     */
+    private $executor;
+
+    public function __construct(string $repo, $executor = 'shell_exec')
     {
         $this->repo = $repo;
+        $this->executor = $executor;
     }
 
     private function getCurl(string $url): ?string
     {
         $token = getenv('GITHUB_TOKEN');
 
-        return shell_exec(
+        return ($this->executor)(
             'curl -s ' .
             '-H "Accept: application/vnd.github.antiope-preview+json" ' .
             (empty($token) ? '' : '-H "Authorization: token ' . $token . '" ') .

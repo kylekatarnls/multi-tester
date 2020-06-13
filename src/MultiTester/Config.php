@@ -60,6 +60,11 @@ class Config
     public $adds = [];
 
     /**
+     * @var string|callable
+     */
+    public $executor = 'shell_exec';
+
+    /**
      * Config constructor.
      *
      * @param MultiTester $multiTester

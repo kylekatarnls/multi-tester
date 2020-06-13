@@ -88,7 +88,7 @@ class Project
         $replace = (array) $this->config->data['replace'];
 
         foreach ($replace as $package => $version) {
-            (new Directory('vendor/' . $package))->remove();
+            (new Directory('vendor/' . $package, $this->config->executor))->remove();
         }
     }
 
@@ -231,7 +231,7 @@ class Project
                         throw new MultiTesterException('success_only can be used only with github.com source URLs for now.');
                     }
 
-                    $gitHub = new GitHub($match[1]);
+                    $gitHub = new GitHub($match[1], $this->config->executor);
                     $reference = $gitHub->getFirstSuccessfulCommit($reference);
                 }
 
@@ -319,7 +319,7 @@ class Project
 
         $this->seedCloneSetting($settings);
 
-        (new Directory('.'))->clean();
+        (new Directory('.', $this->config->executor))->clean();
 
         if (!$config->quiet) {
             $tester->info("empty current directory\n");
@@ -389,7 +389,7 @@ class Project
 
         $this->removeReplacedPackages();
 
-        (new Directory($config->projectDirectory))->copy('vendor/' . $config->packageName, ['.git', 'vendor']);
+        (new Directory($config->projectDirectory, $this->config->executor))->copy('vendor/' . $config->packageName, ['.git', 'vendor']);
 
         $this->autoload();
 
