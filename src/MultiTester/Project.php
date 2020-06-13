@@ -222,9 +222,23 @@ class Project
             $this->seedSourceSetting($settings);
             $this->checkSourceSetting($settings);
             $settings['clone'] = ['git clone ' . $settings['source']['url'] . ' .' . ($this->config->quiet ? ' --quiet' : '')];
+            $reference = $settings['source']['reference'] ?? null;
+            $successOnly = $settings['source']['success_only'] ?? false;
 
-            if (isset($settings['source']['reference'])) {
-                $settings['clone'][] = 'git checkout ' . $settings['source']['reference'] . ($this->config->quiet ? ' --quiet' : '');
+            if ($reference || $successOnly) {
+                if ($successOnly ?? false) {
+                    if (!preg_match('/(?:https?:\/\/github\.com\/|git@github\.com:)([^\/]+\/[^\/]+)(?:\.git)?$/U', $settings['source']['url'], $match)) {
+                        throw new MultiTesterException('success_only can be used only with github.com source URLs for now.');
+                    }
+
+                    $gitHub = new GitHub($match[1]);
+                    $reference = $gitHub->getFirstSuccessfulCommit($reference);
+
+                    var_dump($reference);
+                    exit;
+                }
+
+                $settings['clone'][] = 'git checkout ' . $reference . ($this->config->quiet ? ' --quiet' : '');
             }
         }
 
