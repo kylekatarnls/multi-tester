@@ -15,9 +15,10 @@ class GitHub
     {
         $token = getenv('GITHUB_TOKEN');
 
-        return shell_exec('curl -s '.
-            '-H "Accept: application/vnd.github.antiope-preview+json" '.
-            (empty($token) ? '' : '-H "Authorization: token '.$token.'" ').
+        return shell_exec(
+            'curl -s ' .
+            '-H "Accept: application/vnd.github.antiope-preview+json" ' .
+            (empty($token) ? '' : '-H "Authorization: token ' . $token . '" ') .
             "https://api.github.com/repos/{$this->repo}/commits$url"
         );
     }

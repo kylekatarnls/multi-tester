@@ -27,7 +27,8 @@ class Summary
     {
         return $this->config['color_support'] ??
             // @codeCoverageIgnoreStart
-            (DIRECTORY_SEPARATOR === '\\'
+            (
+                DIRECTORY_SEPARATOR === '\\'
                 ? false !== getenv('ANSICON') ||
                 'ON' === getenv('ConEmuANSI') ||
                 false !== getenv('BABUN_HOME')
