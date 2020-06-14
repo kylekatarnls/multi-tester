@@ -35,4 +35,46 @@ class GitHubTest extends TestCase
             'foo' => 'bar',
         ], $getJSON->invoke($gitHub, '/foobar'));
     }
+
+    public function testIsSuccessful()
+    {
+        $gitHub = new GitHub('vendor/library', function (string $url) {
+            $getUrl = function (string $sha): string {
+                return 'curl -s -H "Accept: application/vnd.github.antiope-preview+json" ' .
+                    "https://api.github.com/repos/vendor/library/commits/$sha/check-suites";
+            };
+            $data = [
+                'check_suites' => [
+                    [
+                        'status' => 'queued',
+                        'conclusion' => null,
+                    ],
+                    [
+                        'status' => 'completed',
+                        'conclusion' => 'success',
+                    ],
+                    [
+                        'status' => 'completed',
+                        'conclusion' => call_user_func(function () use ($url, $getUrl) {
+                            switch ($url) {
+                                case $getUrl('a12'):
+                                    return 'success';
+                                case $getUrl('b34'):
+                                    return 'failure';
+                            }
+
+                            return $url;
+                        }),
+                    ],
+                ],
+            ];
+
+            return json_encode($data);
+        });
+        $isSuccessful = new ReflectionMethod($gitHub, 'isSuccessful');
+        $isSuccessful->setAccessible(true);
+
+        $this->assertTrue($isSuccessful->invoke($gitHub, 'a12'));
+        $this->assertFalse($isSuccessful->invoke($gitHub, 'b34'));
+    }
 }
