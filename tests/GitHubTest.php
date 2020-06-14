@@ -64,7 +64,7 @@ class GitHubTest extends TestCase
                         'conclusion' => 'success',
                     ],
                     [
-                        'status' => 'completed',
+                        'status'     => 'completed',
                         'conclusion' => call_user_func(function () use ($url, $getUrl) {
                             switch ($url) {
                                 case $getUrl('a12'):

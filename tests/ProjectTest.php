@@ -476,21 +476,25 @@ class ProjectTest extends TestCase
     public function testSourceOnlyWithNonGitHubRepository()
     {
         $this->expectException(MultiTesterException::class);
-        $this->expectExceptionMessage("Source malformed, it should contains at least 'type' and 'url' entries.");
+        $this->expectExceptionMessage("'success_only' can be used only with github.com source URLs for now.");
 
         chdir(__DIR__ . '/project');
 
         $tester = new MultiTester();
         $config = new Config($tester, [__DIR__ . '/../bin/multi-tester']);
-        $project = new Project('pug-php/pug', $config, []);
-        $checkSourceSetting = new ReflectionMethod($project, 'checkSourceSetting');
-        $checkSourceSetting->setAccessible(true);
+        $project = new Project('foo/bar', $config, []);
+        $seedCloneSetting = new ReflectionMethod($project, 'seedCloneSetting');
+        $seedCloneSetting->setAccessible(true);
 
-        $checkSourceSetting->invoke($project, [
+        $settings = [
             'source' => [
-                'foo' => 'bar',
+                'type' => 'git',
+                'url' => 'https://gitlab.com/foo/bar.git',
+                'success_only' => true,
             ],
-        ]);
+        ];
+
+        $seedCloneSetting->invokeArgs($project, [&$settings]);
     }
 
     /**

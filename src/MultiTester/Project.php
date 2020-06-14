@@ -228,7 +228,7 @@ class Project
             if ($reference || $successOnly) {
                 if ($successOnly ?? false) {
                     if (!preg_match('/(?:https?:\/\/github\.com\/|git@github\.com:)([^\/]+\/[^\/]+)(?:\.git)?$/U', $settings['source']['url'], $match)) {
-                        throw new MultiTesterException('success_only can be used only with github.com source URLs for now.');
+                        throw new MultiTesterException("'success_only' can be used only with github.com source URLs for now.");
                     }
 
                     $gitHub = new GitHub($match[1], $this->config->executor);
