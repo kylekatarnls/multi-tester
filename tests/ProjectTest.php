@@ -459,8 +459,8 @@ class ProjectTest extends TestCase
 
         $settings = [
             'source' => [
-                'type' => 'git',
-                'url' => 'https://github.com/pug-php/pug.git',
+                'type'         => 'git',
+                'url'          => 'https://github.com/pug-php/pug.git',
                 'success_only' => true,
             ],
         ];
@@ -561,8 +561,8 @@ class ProjectTest extends TestCase
 
         $settings = [
             'source' => [
-                'type' => 'git',
-                'url' => 'https://gitlab.com/foo/bar.git',
+                'type'         => 'git',
+                'url'          => 'https://gitlab.com/foo/bar.git',
                 'success_only' => true,
             ],
         ];
