@@ -5,6 +5,7 @@ namespace MultiTester\Tests;
 use MultiTester\Config;
 use MultiTester\Directory;
 use MultiTester\MultiTester;
+use MultiTester\MultiTesterException;
 use PHPUnit\Framework\TestCase;
 
 class ConfigTest extends TestCase
@@ -71,33 +72,39 @@ class ConfigTest extends TestCase
     }
 
     /**
-     * @expectedException        \MultiTester\MultiTesterException
-     * @expectedExceptionMessage Multi-tester config file 'does-not-exists' not found.
+     * @throws MultiTesterException
      */
     public function testMissingConfigFile()
     {
+        $this->expectException(MultiTesterException::class);
+        $this->expectExceptionMessage("Multi-tester config file 'does-not-exists' not found.");
+
         chdir(__DIR__ . '/project');
 
         new Config(new MultiTester(), [__DIR__ . '/../bin/multi-tester', 'does-not-exists']);
     }
 
     /**
-     * @expectedException        \MultiTester\MultiTesterException
-     * @expectedExceptionMessage Set the 'directory' entry to a path containing a composer.json file.
+     * @throws MultiTesterException
      */
     public function testMissingComposerFile()
     {
+        $this->expectException(MultiTesterException::class);
+        $this->expectExceptionMessage("Set the 'directory' entry to a path containing a composer.json file.");
+
         chdir(__DIR__ . '/project');
 
         new Config(new MultiTester(), [__DIR__ . '/../bin/multi-tester', __DIR__ . '/dependency/.travis.yml']);
     }
 
     /**
-     * @expectedException        \MultiTester\MultiTesterException
-     * @expectedExceptionMessage The composer.json file must contains a 'name' entry.
+     * @throws MultiTesterException
      */
     public function testMissingProjectName()
     {
+        $this->expectException(MultiTesterException::class);
+        $this->expectExceptionMessage("The composer.json file must contains a 'name' entry.");
+
         chdir(__DIR__ . '/project');
 
         new Config(new MultiTester(), [__DIR__ . '/../bin/multi-tester', __DIR__ . '/bad-name/.multi-tester.yml']);

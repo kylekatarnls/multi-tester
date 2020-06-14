@@ -3,11 +3,15 @@
 namespace MultiTester\Tests;
 
 use MultiTester\GitHub;
+use MultiTester\MultiTesterException;
 use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
 
 class GitHubTest extends TestCase
 {
+    /**
+     * @throws \ReflectionException
+     */
     public function testGetCurl()
     {
         $calls = [];
@@ -23,6 +27,9 @@ class GitHubTest extends TestCase
         ], $calls);
     }
 
+    /**
+     * @throws \ReflectionException
+     */
     public function testGetJSON()
     {
         $gitHub = new GitHub('vendor/library', function () {
@@ -36,6 +43,9 @@ class GitHubTest extends TestCase
         ], $getJSON->invoke($gitHub, '/foobar'));
     }
 
+    /**
+     * @throws \ReflectionException
+     */
     public function testIsSuccessful()
     {
         $gitHub = new GitHub('vendor/library', function (string $url) {
@@ -46,11 +56,11 @@ class GitHubTest extends TestCase
             $data = [
                 'check_suites' => [
                     [
-                        'status' => 'queued',
+                        'status'     => 'queued',
                         'conclusion' => null,
                     ],
                     [
-                        'status' => 'completed',
+                        'status'     => 'completed',
                         'conclusion' => 'success',
                     ],
                     [
@@ -126,5 +136,117 @@ class GitHubTest extends TestCase
         });
 
         $this->assertSame('a12', $gitHub->getFirstSuccessfulCommit());
+    }
+
+    /**
+     * @throws MultiTesterException
+     */
+    public function testGetFirstSuccessfulCommitFailure()
+    {
+        $this->expectException(MultiTesterException::class);
+        $this->expectExceptionMessage('No successful commit found in the 2 last commits of vendor/library.');
+
+        $gitHub = new GitHub('vendor/library', function (string $url) {
+            $getUrl = function (string $url): string {
+                return 'curl -s -H "Accept: application/vnd.github.antiope-preview+json" ' .
+                    "https://api.github.com/repos/vendor/library/commits$url";
+            };
+
+            switch ($url) {
+                case $getUrl(''):
+                    $data = [
+                        ['sha' => 'b34'],
+                        ['sha' => 'a12'],
+                    ];
+                    break;
+                default:
+                    $data = [
+                        'check_suites' => [
+                            [
+                                'status'     => 'queued',
+                                'conclusion' => null,
+                            ],
+                            [
+                                'status'     => 'completed',
+                                'conclusion' => 'success',
+                            ],
+                            [
+                                'status'     => 'completed',
+                                'conclusion' => call_user_func(function () use ($url, $getUrl) {
+                                    switch ($url) {
+                                        case $getUrl('/a12/check-suites'):
+                                            return 'failure';
+                                        case $getUrl('/b34/check-suites'):
+                                            return 'failure';
+                                    }
+
+                                    return $url;
+                                }),
+                            ],
+                        ],
+                    ];
+                    break;
+            }
+
+            return json_encode($data);
+        });
+
+        $gitHub->getFirstSuccessfulCommit();
+    }
+
+    /**
+     * @throws MultiTesterException
+     */
+    public function testGetFirstSuccessfulCommitFailureWithBranch()
+    {
+        $this->expectException(MultiTesterException::class);
+        $this->expectExceptionMessage('No successful commit found in the 2 last commits on master of vendor/library.');
+
+        $gitHub = new GitHub('vendor/library', function (string $url) {
+            $getUrl = function (string $url): string {
+                return 'curl -s -H "Accept: application/vnd.github.antiope-preview+json" ' .
+                    "https://api.github.com/repos/vendor/library/commits$url";
+            };
+
+            switch ($url) {
+                case $getUrl('?sha=master'):
+                    $data = [
+                        ['sha' => 'b34'],
+                        ['sha' => 'a12'],
+                    ];
+                    break;
+                default:
+                    $data = [
+                        'check_suites' => [
+                            [
+                                'status'     => 'queued',
+                                'conclusion' => null,
+                            ],
+                            [
+                                'status'     => 'completed',
+                                'conclusion' => 'success',
+                            ],
+                            [
+                                'status'     => 'completed',
+                                'conclusion' => call_user_func(function () use ($url, $getUrl) {
+                                    switch ($url) {
+                                        case $getUrl('/a12/check-suites'):
+                                            return 'failure';
+                                        case $getUrl('/b34/check-suites'):
+                                            return 'failure';
+                                    }
+
+                                    return $url;
+                                }),
+                            ],
+                        ],
+                    ];
+                    break;
+            }
+
+            return json_encode($data);
+        });
+
+        $gitHub->getFirstSuccessfulCommit('master');
     }
 }

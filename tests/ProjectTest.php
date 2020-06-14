@@ -400,13 +400,14 @@ class ProjectTest extends TestCase
     }
 
     /**
-     * @expectedException        \MultiTester\MultiTesterException
-     * @expectedExceptionMessage Source not found for pug-php/pug, you must provide it manually via a 'source' entry.
-     *
      * @throws \ReflectionException
+     * @throws MultiTesterException
      */
     public function testCheckSourceSettingNotFound()
     {
+        $this->expectException(MultiTesterException::class);
+        $this->expectExceptionMessage("Source not found for pug-php/pug, you must provide it manually via a 'source' entry.");
+
         chdir(__DIR__ . '/project');
 
         $tester = new MultiTester();
@@ -419,13 +420,14 @@ class ProjectTest extends TestCase
     }
 
     /**
-     * @expectedException        \MultiTester\MultiTesterException
-     * @expectedExceptionMessage Git source supported only for now, you should provide a manual 'clone' command instead.
-     *
      * @throws \ReflectionException
+     * @throws MultiTesterException
      */
     public function testCheckSourceSettingNotSupportedType()
     {
+        $this->expectException(MultiTesterException::class);
+        $this->expectExceptionMessage("Git source supported only for now, you should provide a manual 'clone' command instead.");
+
         chdir(__DIR__ . '/project');
 
         $tester = new MultiTester();
@@ -443,13 +445,39 @@ class ProjectTest extends TestCase
     }
 
     /**
-     * @expectedException        \MultiTester\MultiTesterException
-     * @expectedExceptionMessage Source malformed, it should contains at least 'type' and 'url' entries.
-     *
      * @throws \ReflectionException
+     * @throws MultiTesterException
      */
     public function testCheckSourceSettingMalFormed()
     {
+        $this->expectException(MultiTesterException::class);
+        $this->expectExceptionMessage("Source malformed, it should contains at least 'type' and 'url' entries.");
+
+        chdir(__DIR__ . '/project');
+
+        $tester = new MultiTester();
+        $config = new Config($tester, [__DIR__ . '/../bin/multi-tester']);
+        $project = new Project('pug-php/pug', $config, []);
+        $checkSourceSetting = new ReflectionMethod($project, 'checkSourceSetting');
+        $checkSourceSetting->setAccessible(true);
+
+        $checkSourceSetting->invoke($project, [
+            'source' => [
+                'foo' => 'bar',
+            ],
+        ]);
+    }
+
+    /**
+     * @group i
+     * @throws \ReflectionException
+     * @throws MultiTesterException
+     */
+    public function testSourceOnlyWithNonGitHubRepository()
+    {
+        $this->expectException(MultiTesterException::class);
+        $this->expectExceptionMessage("Source malformed, it should contains at least 'type' and 'url' entries.");
+
         chdir(__DIR__ . '/project');
 
         $tester = new MultiTester();
