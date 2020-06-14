@@ -403,6 +403,80 @@ class ProjectTest extends TestCase
      * @throws \ReflectionException
      * @throws MultiTesterException
      */
+    public function testSourceOnly()
+    {
+        chdir(__DIR__ . '/project');
+
+        $tester = new MultiTester();
+        $config = new Config($tester, [__DIR__ . '/../bin/multi-tester']);
+        $config->executor = function (string $url) {
+            $getUrl = function (string $url): string {
+                return 'curl -s -H "Accept: application/vnd.github.antiope-preview+json" ' .
+                    "https://api.github.com/repos/pug-php/pug/commits$url";
+            };
+
+            switch ($url) {
+                case $getUrl(''):
+                    $data = [
+                        ['sha' => 'b34'],
+                        ['sha' => 'a12'],
+                    ];
+                    break;
+                default:
+                    $data = [
+                        'check_suites' => [
+                            [
+                                'status'     => 'queued',
+                                'conclusion' => null,
+                            ],
+                            [
+                                'status'     => 'completed',
+                                'conclusion' => 'success',
+                            ],
+                            [
+                                'status'     => 'completed',
+                                'conclusion' => call_user_func(function () use ($url, $getUrl) {
+                                    switch ($url) {
+                                        case $getUrl('/a12/check-suites'):
+                                            return 'success';
+                                        case $getUrl('/b34/check-suites'):
+                                            return 'failure';
+                                    }
+
+                                    return $url;
+                                }),
+                            ],
+                        ],
+                    ];
+                    break;
+            }
+
+            return json_encode($data);
+        };
+        $project = new Project('pug-php/pug', $config, []);
+        $seedCloneSetting = new ReflectionMethod($project, 'seedCloneSetting');
+        $seedCloneSetting->setAccessible(true);
+
+        $settings = [
+            'source' => [
+                'type' => 'git',
+                'url' => 'https://github.com/pug-php/pug.git',
+                'success_only' => true,
+            ],
+        ];
+
+        $seedCloneSetting->invokeArgs($project, [&$settings]);
+
+        $this->assertSame([
+            'git clone https://github.com/pug-php/pug.git .',
+            'git checkout a12',
+        ], $settings['clone']);
+    }
+
+    /**
+     * @throws \ReflectionException
+     * @throws MultiTesterException
+     */
     public function testCheckSourceSettingNotFound()
     {
         $this->expectException(MultiTesterException::class);
@@ -469,7 +543,6 @@ class ProjectTest extends TestCase
     }
 
     /**
-     * @group i
      * @throws \ReflectionException
      * @throws MultiTesterException
      */
