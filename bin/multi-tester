@@ -31,8 +31,9 @@ function getLoader()
     return false;
 }
 
+$cwd = @getcwd() ?: '.';
 $possibleFolders = array_unique(array_filter(array_map('realpath', [
-    getcwd() . '/vendor',
+    $cwd . '/vendor',
     __DIR__ . '/../vendor',
     __DIR__ . '/../../..'
 ]), 'file_exists'));

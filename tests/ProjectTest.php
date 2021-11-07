@@ -636,6 +636,17 @@ class ProjectTest extends TestCase
             'composer install --no-interaction',
         ], $settings['install']);
 
+        @unlink('composer-2.1.10.phar');
+        $settings = ['composer' => '2.1.10'];
+        $seedInstallSetting->invokeArgs($project, [&$settings]);
+
+        $this->assertSame([
+            'composer-2.1.10.phar install --no-interaction',
+        ], $settings['install']);
+        $this->assertFileExists('composer-2.1.10.phar');
+
+        @unlink('composer-2.1.10.phar');
+
         $settings = [
             'install' => 'travis',
         ];

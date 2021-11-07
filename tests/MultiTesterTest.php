@@ -442,7 +442,10 @@ class MultiTesterTest extends TestCase
         } catch (MultiTesterException $exception) {
             $message = $exception->getMessage();
         }
-        $output = file_get_contents($buffer);
+
+        $output = strtr(file_get_contents($buffer), [
+            "\nsh: 0: getcwd() failed: No such file or directory" => '',
+        ]);
         @unlink($buffer);
 
         $this->assertSame('Cloning pug-php/pug failed.', $message);

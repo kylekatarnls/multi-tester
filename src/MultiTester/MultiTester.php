@@ -125,7 +125,7 @@ class MultiTester
         }
 
         $directories = [];
-        $cwd = getcwd();
+        $cwd = @getcwd() ?: '.';
         $state = [];
 
         foreach ($config->projects as $package => $settings) {
