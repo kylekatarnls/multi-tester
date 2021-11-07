@@ -242,6 +242,24 @@ class Project
         $this->asArray($settings['clone']);
     }
 
+    protected function getComposerProgram($settings)
+    {
+        if (isset($settings['composer'])) {
+            $version = $settings['composer'];
+
+            if (!file_exists("composer-$version.phar")) {
+                copy(
+                    "https://getcomposer.org/download/$version/composer.phar",
+                    "composer-$version.phar"
+                );
+            }
+
+            return "composer-$version.phar";
+        }
+
+        return 'composer';
+    }
+
     /**
      * @param array $settings
      */
@@ -277,7 +295,9 @@ class Project
             $settings,
             'autoload',
             'autoload build script',
-            'composer dump-autoload --optimize --no-interaction' . ($this->config->quiet ? ' --quiet' : '')
+            $this->getComposerProgram($settings) .
+                ' dump-autoload --optimize --no-interaction' .
+                ($this->config->quiet ? ' --quiet' : '')
         );
     }
 
@@ -290,7 +310,9 @@ class Project
             $settings,
             'install',
             'install script',
-            'composer install --no-interaction' . ($this->config->quiet ? ' --quiet' : '')
+            $this->getComposerProgram($settings) .
+                ' install --no-interaction' .
+                ($this->config->quiet ? ' --quiet' : '')
         );
     }
 
