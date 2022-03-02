@@ -76,12 +76,12 @@ class Config
     {
         $arguments = $this->filterArguments($arguments, '--add');
         $this->tester = $multiTester;
-        $this->verbose = in_array('--verbose', $arguments) || in_array('-v', $arguments);
-        $this->quiet = in_array('--quiet-install', $arguments) || in_array('-q', $arguments);
-        $arguments = array_filter($arguments, function ($argument) {
-            return $argument !== '--verbose' && $argument !== '-v';
-        });
-        $this->configFile = $arguments[1] ?? $multiTester->getMultiTesterFile();
+        $this->verbose = in_array('--verbose', $arguments, true) || in_array('-v', $arguments, true);
+        $this->quiet = in_array('--quiet-install', $arguments, true) || in_array('-q', $arguments, true);
+        $arguments = array_slice(array_values(array_filter($arguments, function ($argument) {
+            return !in_array($argument, ['--verbose', '-v', '--quiet-install', '-q'], true);
+        })), 1);
+        $this->configFile = $arguments[0] ?? $multiTester->getMultiTesterFile();
         $this->addProjects();
 
         if (!file_exists($this->configFile)) {
