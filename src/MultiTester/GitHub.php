@@ -58,7 +58,7 @@ class GitHub
         $commits = array_slice($this->getJSON(($branch ? "?sha=$branch" : '')), 0, $limit);
 
         foreach ($commits as ['sha' => $sha]) {
-            if ($this->isSuccessful($sha)) {
+            if ($sha && $this->isSuccessful($sha)) {
                 return $sha;
             }
         }
