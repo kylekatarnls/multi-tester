@@ -69,6 +69,9 @@ class GitHub
             $message .= ' on ' . $branch;
         }
 
-        throw new MultiTesterException("No successful commit found in the $message of {$this->repo}.");
+        throw new MultiTesterException(
+            "No successful commit found in the $message of {$this->repo}. Output:\n" .
+            json_encode($commits, JSON_PRETTY_PRINT)
+        );
     }
 }
