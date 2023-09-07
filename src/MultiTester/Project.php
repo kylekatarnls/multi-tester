@@ -2,6 +2,7 @@
 
 namespace MultiTester;
 
+use ArrayAccess;
 use Composer\Semver\Semver;
 
 class Project
@@ -174,14 +175,17 @@ class Project
             $package = $this->getPackage();
             $tester = $this->getConfig()->getTester();
             $composerSettings = $tester->getComposerSettings($package);
-            $version = $this->filterVersion($settings['version'], array_keys($composerSettings ?: []));
+            $version = is_array($composerSettings)
+                ? $this->filterVersion($settings['version'], array_keys((array) ($composerSettings ?: [])))
+                : '';
 
             $settings['source'] = $composerSettings[$version]['source']
                 ?? $this->getRepositoryUrl($composerSettings);
         }
     }
 
-    protected function getRepositoryUrl(?array $composerSettings): ?array
+    /** @param ArrayAccess|array|null $composerSettings */
+    protected function getRepositoryUrl($composerSettings): ?array
     {
         return isset($composerSettings['repository_url'])
             ? [

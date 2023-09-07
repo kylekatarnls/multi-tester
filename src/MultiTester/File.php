@@ -38,6 +38,6 @@ class File extends ArrayObject
 
     public function isValid()
     {
-        return $this->toArray() === [];
+        return $this->toArray() !== [];
     }
 }

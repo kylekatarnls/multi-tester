@@ -573,6 +573,7 @@ class ProjectTest extends TestCase
     /**
      * @throws \ReflectionException
      * @throws MultiTesterException
+     * @group i
      */
     public function testSeedCloneSetting()
     {
