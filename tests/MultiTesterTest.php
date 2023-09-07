@@ -6,6 +6,7 @@ use MultiTester\Config;
 use MultiTester\Directory;
 use MultiTester\MultiTester;
 use MultiTester\MultiTesterException;
+use MultiTester\Project;
 use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
 
@@ -250,6 +251,33 @@ class MultiTesterTest extends TestCase
         $this->assertSame('3.2.0', $package['version']);
 
         $this->assertNull($method->invoke($tester, 'pug-php/i-will-never-exist'));
+    }
+
+    /**
+     * @throws \ReflectionException
+     */
+    public function testLibrariesIoFallback()
+    {
+        $tester = new MultiTester();
+        $method = new ReflectionMethod($tester, 'getComposerSettings');
+        $method->setAccessible(true);
+
+        $package = $method->invoke($tester, 'pug/pug');
+
+        $cwd = @getcwd() ?: '.';
+        chdir(__DIR__ . '/project');
+
+        $tester = new Project('pug/pug', new Config($tester, [__DIR__ . '/../bin/multi-tester']), null);
+        $method = new ReflectionMethod($tester, 'getRepositoryUrl');
+        $method->setAccessible(true);
+
+        $source = $method->invoke($tester, $package);
+        chdir($cwd);
+
+        $this->assertSame([
+            'type' => 'git',
+            'url'  => 'https://github.com/kylekatarnls/pug3',
+        ], $source);
     }
 
     /**
