@@ -122,8 +122,8 @@ class Project
 
     /**
      * @param MultiTester $tester
-     * @param $settings
-     * @param $package
+     * @param array       $settings
+     * @param string      $package
      *
      * @throws TestFailedException
      *
@@ -177,11 +177,18 @@ class Project
             $version = $this->filterVersion($settings['version'], array_keys($composerSettings ?: []));
 
             $settings['source'] = $composerSettings[$version]['source']
-                ?? (isset($composerSettings['repository_url'])
-                    ? ['type' => 'git', 'url' => $composerSettings['repository_url']]
-                    : null
-                );
+                ?? $this->getRepositoryUrl($composerSettings);
         }
+    }
+
+    protected function getRepositoryUrl(array $composerSettings): ?array
+    {
+        return isset($composerSettings['repository_url'])
+            ? [
+                'type' => 'git',
+                'url' => $composerSettings['repository_url'],
+            ]
+            : null;
     }
 
     /**
