@@ -46,7 +46,7 @@ class MultiTester
             $file = new File("https://repo.packagist.org/p/$package.json");
             $this->composerSettings[$package] = $file->isValid()
                 ? (($file['packages'] ?? [])[$package] ?? null)
-                : new File('https://libraries.io/api/Packagist/' . urlencode($package));
+                : $this->getFromLibrariesIo($package);
         }
 
         return $this->composerSettings[$package];
@@ -283,5 +283,12 @@ class MultiTester
         throw $message instanceof MultiTesterException ?
             new MultiTesterException($message->getMessage(), 0, $message) :
             new MultiTesterException($message);
+    }
+
+    private function getFromLibrariesIo(string $package): ?File
+    {
+        $file = new File('https://libraries.io/api/Packagist/' . urlencode($package), 'json');
+
+        return $file->isValid() ? $file : null;
     }
 }

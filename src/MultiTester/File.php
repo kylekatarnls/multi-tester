@@ -7,11 +7,20 @@ use Symfony\Component\Yaml\Yaml;
 
 class File extends ArrayObject
 {
+    /** @var string */
     protected $path;
 
-    public function __construct($path)
+    /** @var 'json'|'yaml'|null */
+    protected $mode;
+
+    /**
+     * @param string             $path
+     * @param 'json'|'yaml'|null $mode
+     */
+    public function __construct($path, $mode = null)
     {
         $this->path = $path;
+        $this->mode = $mode;
         $data = $this->parse();
         parent::__construct(is_array($data) ? $data : []);
     }
@@ -28,7 +37,11 @@ class File extends ArrayObject
 
     public function parse()
     {
-        return strtolower(substr($this->path, -5)) === '.json' ? $this->json() : $this->yaml();
+        $json = $this->mode === null
+            ? (strtolower(substr($this->path, -5)) === '.json')
+            : ($this->mode === 'json');
+
+        return $json ? $this->json() : $this->yaml();
     }
 
     public function toArray()
