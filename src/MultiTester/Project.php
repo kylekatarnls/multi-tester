@@ -181,7 +181,7 @@ class Project
         }
     }
 
-    protected function getRepositoryUrl(array $composerSettings): ?array
+    protected function getRepositoryUrl(?array $composerSettings): ?array
     {
         return isset($composerSettings['repository_url'])
             ? [
