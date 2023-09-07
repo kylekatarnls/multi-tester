@@ -500,7 +500,7 @@ class ProjectTest extends TestCase
     public function testCheckSourceSettingNotSupportedType()
     {
         $this->expectException(MultiTesterException::class);
-        $this->expectExceptionMessage("Git source supported only for now, you should provide a manual 'clone' command instead.");
+        $this->expectExceptionMessage("Git is the only supported source for now, you should provide a manual 'clone' command instead.");
 
         chdir(__DIR__ . '/project');
 

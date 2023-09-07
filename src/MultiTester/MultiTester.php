@@ -43,7 +43,10 @@ class MultiTester
     public function getComposerSettings($package)
     {
         if (!isset($this->composerSettings[$package])) {
-            $this->composerSettings[$package] = new File("https://repo.packagist.org/p/$package.json");
+            $file = new File("https://repo.packagist.org/p/$package.json");
+            $this->composerSettings[$package] = $file->isValid()
+                ? $file
+                : new File('https://libraries.io/api/Packagist/' . urlencode($package));
             $this->composerSettings[$package] = ($this->composerSettings[$package]['packages'] ?? [])[$package] ?? null;
         }
 

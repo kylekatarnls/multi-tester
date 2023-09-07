@@ -35,4 +35,9 @@ class File extends ArrayObject
     {
         return $this->getArrayCopy();
     }
+
+    public function isValid()
+    {
+        return $this->toArray() === [];
+    }
 }

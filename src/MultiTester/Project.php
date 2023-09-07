@@ -176,9 +176,11 @@ class Project
             $composerSettings = $tester->getComposerSettings($package);
             $version = $this->filterVersion($settings['version'], array_keys($composerSettings ?: []));
 
-            $settings['source'] = isset($composerSettings[$version]['source'])
-                ? $composerSettings[$version]['source']
-                : null;
+            $settings['source'] = $composerSettings[$version]['source']
+                ?? (isset($composerSettings['repository_url'])
+                    ? ['type' => 'git', 'url' => $composerSettings['repository_url']]
+                    : null
+                );
         }
     }
 
@@ -200,7 +202,7 @@ class Project
         }
 
         if ($settings['source']['type'] !== 'git') {
-            throw new MultiTesterException("Git source supported only for now, you should provide a manual 'clone' command instead.");
+            throw new MultiTesterException("Git is the only supported source for now, you should provide a manual 'clone' command instead.");
         }
     }
 
