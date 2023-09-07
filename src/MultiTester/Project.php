@@ -186,7 +186,7 @@ class Project
         return isset($composerSettings['repository_url'])
             ? [
                 'type' => 'git',
-                'url' => $composerSettings['repository_url'],
+                'url'  => $composerSettings['repository_url'],
             ]
             : null;
     }
