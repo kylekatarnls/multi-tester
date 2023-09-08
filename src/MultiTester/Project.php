@@ -174,7 +174,7 @@ class Project
 
             $package = $this->getPackage();
             $tester = $this->getConfig()->getTester();
-            $composerSettings = $tester->getComposerSettings($package);
+            $composerSettings = $tester->getComposerSettings($package, $settings['platforms'] ?? null);
             $version = is_array($composerSettings)
                 ? $this->filterVersion($settings['version'], array_keys((array) ($composerSettings ?: [])))
                 : '';

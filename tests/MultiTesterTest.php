@@ -262,7 +262,7 @@ class MultiTesterTest extends TestCase
         $method = new ReflectionMethod($tester, 'getComposerSettings');
         $method->setAccessible(true);
 
-        $package = $method->invoke($tester, 'pug/pug');
+        $package = $method->invoke($tester, 'pug/pug', 'packagist1, libraries.io');
 
         $cwd = @getcwd() ?: '.';
         chdir(__DIR__ . '/project');
@@ -278,6 +278,21 @@ class MultiTesterTest extends TestCase
             'type' => 'git',
             'url'  => 'https://github.com/kylekatarnls/pug3',
         ], $source);
+    }
+
+    /**
+     * @throws \ReflectionException
+     */
+    public function testInvalidPlatform()
+    {
+        $this->expectException(MultiTesterException::class);
+        $this->expectExceptionMessage("Unknown platform 'foobar'");
+
+        $tester = new MultiTester();
+        $method = new ReflectionMethod($tester, 'getComposerSettings');
+        $method->setAccessible(true);
+
+        $method->invoke($tester, 'pug/pug', 'packagist1, foobar');
     }
 
     /**
