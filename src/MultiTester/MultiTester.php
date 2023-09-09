@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MultiTester;
 
 use MultiTester\Traits\ErrorHandler;
@@ -138,7 +140,7 @@ class MultiTester
 
             chdir($cwd);
 
-            (new Directory($this->getWorkingDirectory(), $config->executor))->remove();
+            $this->removeWorkingDirectory($config->executor);
         }
 
         $this->removeDirectories($directories);
@@ -174,7 +176,6 @@ class MultiTester
         $directory = $this->getStorageDirectory() . '/multi-tester-' . mt_rand(0, 9999999);
         $this->info("working directory: $directory\n");
         $this->setWorkingDirectory($directory);
-        $directory = $this->getWorkingDirectory();
 
         if (is_array($directories)) {
             $directories[] = $directory;

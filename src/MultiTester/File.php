@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MultiTester;
 
 use ArrayObject;
@@ -27,12 +29,16 @@ class File extends ArrayObject
 
     public function yaml()
     {
-        return Yaml::parse(file_get_contents($this->path));
+        $contents = @file_get_contents($this->path);
+
+        return $contents ? Yaml::parse($contents) : [];
     }
 
     public function json()
     {
-        return @json_decode(file_get_contents($this->path), JSON_OBJECT_AS_ARRAY);
+        $contents = @file_get_contents($this->path);
+
+        return $contents ? @json_decode($contents, true, 512, JSON_OBJECT_AS_ARRAY) : [];
     }
 
     public function parse()

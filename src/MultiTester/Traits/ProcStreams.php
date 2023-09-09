@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MultiTester\Traits;
 
 trait ProcStreams
@@ -13,18 +15,12 @@ trait ProcStreams
         ['file', 'php://stderr', 'w'],
     ];
 
-    /**
-     * @return array
-     */
-    public function getProcStreams()
+    public function getProcStreams(): array
     {
         return $this->procStreams;
     }
 
-    /**
-     * @param array $procStreams
-     */
-    public function setProcStreams($procStreams)
+    public function setProcStreams(array $procStreams): void
     {
         $this->procStreams = $procStreams;
     }

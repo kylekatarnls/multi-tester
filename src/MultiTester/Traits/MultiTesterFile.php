@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MultiTester\Traits;
 
 trait MultiTesterFile
@@ -9,18 +11,12 @@ trait MultiTesterFile
      */
     protected $multiTesterFile = '.multi-tester.yml';
 
-    /**
-     * @return string
-     */
-    public function getMultiTesterFile()
+    public function getMultiTesterFile(): string
     {
         return $this->multiTesterFile;
     }
 
-    /**
-     * @param string $multiTesterFile
-     */
-    public function setMultiTesterFile($multiTesterFile)
+    public function setMultiTesterFile(string $multiTesterFile): void
     {
         $this->multiTesterFile = $multiTesterFile;
     }

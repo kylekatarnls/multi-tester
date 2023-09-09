@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MultiTester;
 
 class Directory
@@ -14,13 +16,13 @@ class Directory
      */
     private $executor;
 
-    public function __construct($path, $executor = 'shell_exec')
+    public function __construct(string $path, ?string $executor = 'shell_exec')
     {
         $this->path = $path;
-        $this->executor = $executor;
+        $this->executor = $executor ?? 'shell_exec';
     }
 
-    public function copy($destination, $exceptions = [])
+    public function copy($destination, $exceptions = []): bool
     {
         $source = $this->path;
         $files = @scandir($source);
@@ -33,7 +35,7 @@ class Directory
         $success = true;
 
         foreach ($files as $file) {
-            if ($file !== '.' && $file !== '..' && !in_array($file, $exceptions)) {
+            if ($file !== '.' && $file !== '..' && !in_array($file, $exceptions, true)) {
                 $this->copyItem($source, $destination, $file, $success);
             }
         }
@@ -41,7 +43,7 @@ class Directory
         return $success;
     }
 
-    public function clean()
+    public function clean(): bool
     {
         $dir = $this->path;
 
@@ -63,14 +65,14 @@ class Directory
         return $success;
     }
 
-    public function remove()
+    public function remove(): bool
     {
         $this->clean();
 
         return @rmdir($this->path);
     }
 
-    public function create()
+    public function create(): bool
     {
         $dir = $this->path;
         if (@is_dir($dir)) {
@@ -84,7 +86,7 @@ class Directory
         return @mkdir($dir, 0777, true);
     }
 
-    protected function copyItem($source, $destination, $file, &$success)
+    protected function copyItem($source, $destination, $file, &$success): void
     {
         $path = "$source/$file";
 
@@ -101,7 +103,7 @@ class Directory
         }
     }
 
-    protected function cleanItem($path, &$success)
+    protected function cleanItem($path, &$success): void
     {
         if (@is_dir($path)) {
             if (!(new static($path))->clean() || !@rmdir($path)) {

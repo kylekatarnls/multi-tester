@@ -16,7 +16,7 @@ class ProjectTest extends TestCase
     /**
      * @throws \MultiTester\MultiTesterException
      */
-    public function testGetSettings()
+    public function testGetSettings(): void
     {
         chdir(__DIR__ . '/project');
 
@@ -47,7 +47,7 @@ class ProjectTest extends TestCase
     /**
      * @throws \MultiTester\MultiTesterException
      */
-    public function testGetConfig()
+    public function testGetConfig(): void
     {
         chdir(__DIR__ . '/project');
 
@@ -63,7 +63,7 @@ class ProjectTest extends TestCase
     /**
      * @throws \MultiTester\MultiTesterException
      */
-    public function testGetPackage()
+    public function testGetPackage(): void
     {
         chdir(__DIR__ . '/project');
 
@@ -80,7 +80,7 @@ class ProjectTest extends TestCase
      * @throws \MultiTester\MultiTesterException
      * @throws \ReflectionException
      */
-    public function testGetScript()
+    public function testGetScript(): void
     {
         chdir(__DIR__ . '/project');
 
@@ -102,7 +102,7 @@ class ProjectTest extends TestCase
      * @throws \MultiTester\MultiTesterException
      * @throws \ReflectionException
      */
-    public function testGetTries()
+    public function testGetTries(): void
     {
         chdir(__DIR__ . '/project');
 
@@ -131,7 +131,7 @@ class ProjectTest extends TestCase
     /**
      * @throws \MultiTester\MultiTesterException
      */
-    public function testClone()
+    public function testClone(): void
     {
         chdir(__DIR__ . '/project');
 
@@ -175,7 +175,7 @@ class ProjectTest extends TestCase
     /**
      * @throws \MultiTester\MultiTesterException
      */
-    public function testInstall()
+    public function testInstall(): void
     {
         chdir(__DIR__ . '/project');
 
@@ -219,7 +219,7 @@ class ProjectTest extends TestCase
     /**
      * @throws \MultiTester\MultiTesterException
      */
-    public function testTest()
+    public function testTest(): void
     {
         chdir(__DIR__ . '/project');
 
@@ -305,7 +305,7 @@ class ProjectTest extends TestCase
      * @throws \ReflectionException
      * @throws MultiTesterException
      */
-    public function testFilterVersion()
+    public function testFilterVersion(): void
     {
         chdir(__DIR__ . '/project');
 
@@ -340,7 +340,7 @@ class ProjectTest extends TestCase
      * @throws \ReflectionException
      * @throws MultiTesterException
      */
-    public function testSeedSourceSetting()
+    public function testSeedSourceSetting(): void
     {
         chdir(__DIR__ . '/project');
 
@@ -381,7 +381,7 @@ class ProjectTest extends TestCase
         $this->assertNull($settings['source']);
     }
 
-    public function testCheckSourceSettingGit()
+    public function testCheckSourceSettingGit(): void
     {
         chdir(__DIR__ . '/project');
 
@@ -403,7 +403,7 @@ class ProjectTest extends TestCase
      * @throws \ReflectionException
      * @throws MultiTesterException
      */
-    public function testSourceOnly()
+    public function testSourceOnly(): void
     {
         chdir(__DIR__ . '/project');
 
@@ -477,7 +477,7 @@ class ProjectTest extends TestCase
      * @throws \ReflectionException
      * @throws MultiTesterException
      */
-    public function testCheckSourceSettingNotFound()
+    public function testCheckSourceSettingNotFound(): void
     {
         $this->expectException(MultiTesterException::class);
         $this->expectExceptionMessage("Source not found for pug-php/pug, you must provide it manually via a 'source' entry.");
@@ -497,7 +497,7 @@ class ProjectTest extends TestCase
      * @throws \ReflectionException
      * @throws MultiTesterException
      */
-    public function testCheckSourceSettingNotSupportedType()
+    public function testCheckSourceSettingNotSupportedType(): void
     {
         $this->expectException(MultiTesterException::class);
         $this->expectExceptionMessage("Git is the only supported source for now, you should provide a manual 'clone' command instead.");
@@ -522,7 +522,7 @@ class ProjectTest extends TestCase
      * @throws \ReflectionException
      * @throws MultiTesterException
      */
-    public function testCheckSourceSettingMalFormed()
+    public function testCheckSourceSettingMalFormed(): void
     {
         $this->expectException(MultiTesterException::class);
         $this->expectExceptionMessage("Source malformed, it should contains at least 'type' and 'url' entries.");
@@ -546,7 +546,7 @@ class ProjectTest extends TestCase
      * @throws \ReflectionException
      * @throws MultiTesterException
      */
-    public function testSourceOnlyWithNonGitHubRepository()
+    public function testSourceOnlyWithNonGitHubRepository(): void
     {
         $this->expectException(MultiTesterException::class);
         $this->expectExceptionMessage("'success_only' can be used only with github.com source URLs for now.");
@@ -574,7 +574,7 @@ class ProjectTest extends TestCase
      * @throws \ReflectionException
      * @throws MultiTesterException
      */
-    public function testSeedCloneSetting()
+    public function testSeedCloneSetting(): void
     {
         chdir(__DIR__ . '/project');
 
@@ -606,7 +606,7 @@ class ProjectTest extends TestCase
      * @throws \ReflectionException
      * @throws MultiTesterException
      */
-    public function testInstallCloneSetting()
+    public function testInstallCloneSetting(): void
     {
         chdir(__DIR__ . '/project');
 
@@ -683,7 +683,7 @@ class ProjectTest extends TestCase
      * @throws \ReflectionException
      * @throws MultiTesterException
      */
-    public function testSeedScriptSetting()
+    public function testSeedScriptSetting(): void
     {
         chdir(__DIR__ . '/project');
 
@@ -749,7 +749,7 @@ class ProjectTest extends TestCase
      * @throws \ReflectionException
      * @throws MultiTesterException
      */
-    public function testRemoveReplacedPackages()
+    public function testRemoveReplacedPackages(): void
     {
         chdir(__DIR__ . '/project2');
 

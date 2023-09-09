@@ -13,7 +13,7 @@ class ConfigTest extends TestCase
     /**
      * @throws \MultiTester\MultiTesterException
      */
-    public function testVerbose()
+    public function testVerbose(): void
     {
         chdir(__DIR__ . '/project');
 
@@ -29,7 +29,7 @@ class ConfigTest extends TestCase
     /**
      * @throws \MultiTester\MultiTesterException
      */
-    public function testGetConfig()
+    public function testGetConfig(): void
     {
         chdir(__DIR__ . '/project');
 
@@ -43,7 +43,7 @@ class ConfigTest extends TestCase
     /**
      * @throws \MultiTester\MultiTesterException
      */
-    public function testAddProjects()
+    public function testAddProjects(): void
     {
         $directory = sys_get_temp_dir() . '/test-' . mt_rand(0, 99999);
         mkdir($directory, 0777, true);
@@ -74,7 +74,7 @@ class ConfigTest extends TestCase
     /**
      * @throws MultiTesterException
      */
-    public function testMissingConfigFile()
+    public function testMissingConfigFile(): void
     {
         $this->expectException(MultiTesterException::class);
         $this->expectExceptionMessage("Multi-tester config file 'does-not-exists' not found.");
@@ -87,7 +87,7 @@ class ConfigTest extends TestCase
     /**
      * @throws MultiTesterException
      */
-    public function testMissingComposerFile()
+    public function testMissingComposerFile(): void
     {
         $this->expectException(MultiTesterException::class);
         $this->expectExceptionMessage("Set the 'directory' entry to a path containing a composer.json file.");
@@ -100,7 +100,7 @@ class ConfigTest extends TestCase
     /**
      * @throws MultiTesterException
      */
-    public function testMissingProjectName()
+    public function testMissingProjectName(): void
     {
         $this->expectException(MultiTesterException::class);
         $this->expectExceptionMessage("The composer.json file must contains a 'name' entry.");

@@ -7,7 +7,7 @@ use PHPUnit\Framework\TestCase;
 
 class FileTest extends TestCase
 {
-    public function testParseJsonFile()
+    public function testParseJsonFile(): void
     {
         $this->assertSame([
             'name' => 'my-org/my-project',

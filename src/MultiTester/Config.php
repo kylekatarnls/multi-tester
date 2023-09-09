@@ -1,8 +1,8 @@
 <?php
 
-namespace MultiTester;
+declare(strict_types=1);
 
-use Closure;
+namespace MultiTester;
 
 class Config
 {
@@ -10,6 +10,11 @@ class Config
      * @var MultiTester
      */
     public $tester;
+
+    /**
+     * @var string|null
+     */
+    public $runner;
 
     /**
      * @var string
@@ -69,41 +74,35 @@ class Config
     /**
      * Config constructor.
      *
-     * @param MultiTester $multiTester
-     * @param string[]    $arguments
+     * @param MultiTester  $multiTester
+     * @param list<string> $rawArguments
      *
      * @throws MultiTesterException
      */
-    public function __construct(MultiTester $multiTester, array $arguments)
+    public function __construct(MultiTester $multiTester, array $rawArguments)
     {
-        $arguments = $this->filterArguments($arguments, '--add', function ($value): void {
-            $this->adds[] = (string) $value;
-        });
+        $this->runner = $rawArguments[0] ?? null;
+        $parsedArguments = Arguments::parse(
+            array_slice($rawArguments, 1),
+            [
+                '--verbose'       => '-v',
+                '--quiet-install' => '-q',
+            ],
+            ['--add']
+        );
+        $this->adds = (array) ($parsedArguments->getOption('--add') ?? []);
         $this->tester = $multiTester;
-        $this->verbose = in_array('--verbose', $arguments, true) || in_array('-v', $arguments, true);
-        $this->quiet = in_array('--quiet-install', $arguments, true) || in_array('-q', $arguments, true);
-        $arguments = array_slice(array_values(array_filter($arguments, function ($argument) {
-            return !in_array($argument, ['--verbose', '-v', '--quiet-install', '-q'], true);
-        })), 1);
-        $this->configFile = $arguments[0] ?? $multiTester->getMultiTesterFile();
-        $this->addProjects();
+        $this->verbose = $parsedArguments->hasFlag('--verbose');
+        $this->quiet = $parsedArguments->hasFlag('--quiet-install');
+        $arguments = $parsedArguments->getArguments(1);
 
-        if (!file_exists($this->configFile)) {
-            throw new MultiTesterException("Multi-tester config file '$this->configFile' not found.");
-        }
-
+        $this->setConfigFile($arguments[0] ?? $multiTester->getMultiTesterFile());
         $this->initProjects();
-
-        $base = dirname(realpath($this->configFile));
-        $this->projectDirectory = isset($this->config['directory'])
-            ? rtrim($base, '/\\') . DIRECTORY_SEPARATOR . ltrim($this->config['directory'], '/\\')
-            : $base;
-        $this->composerFile = $this->projectDirectory . '/composer.json';
-
+        $this->initProjectDirectory();
         $this->initData();
     }
 
-    public function addProjects()
+    public function addProjects(): void
     {
         if (count($this->adds)) {
             $file = fopen($this->configFile, 'a');
@@ -121,25 +120,7 @@ class Config
         return $this->tester;
     }
 
-    /** @param string[] $arguments */
-    protected function filterArguments(array $arguments, string $key, ?Closure $record = null): array
-    {
-        $result = [];
-        $match = false;
-        $length = strlen($key) + 1;
-
-        foreach ($arguments as $argument) {
-            if ($this->checkArgumentMatch($match, $record, $key, $argument, $length)) {
-                continue;
-            }
-
-            $result[] = $argument;
-        }
-
-        return $result;
-    }
-
-    protected function initProjects()
+    protected function initProjects(): void
     {
         $config = new File($this->configFile);
         $this->config = $config;
@@ -155,7 +136,7 @@ class Config
     /**
      * @throws MultiTesterException
      */
-    protected function initData()
+    protected function initData(): void
     {
         if (!file_exists($this->composerFile)) {
             throw new MultiTesterException("Set the 'directory' entry to a path containing a composer.json file.");
@@ -170,39 +151,25 @@ class Config
         $this->packageName = $this->data['name'];
     }
 
-    private function checkArgumentMatch(
-        bool &$match,
-        ?Closure $record,
-        string $key,
-        string $argument,
-        int $length
-    ): bool {
-        if ($match) {
-            $match = false;
-            $this->recordValue($record, $argument);
+    /**
+     * @throws MultiTesterException
+     */
+    private function setConfigFile(string $configFile): void
+    {
+        $this->configFile = $configFile;
+        $this->addProjects();
 
-            return true;
+        if (!file_exists($this->configFile)) {
+            throw new MultiTesterException("Multi-tester config file '$this->configFile' not found.");
         }
-
-        if ($argument === $key) {
-            $match = true;
-
-            return true;
-        }
-
-        if (substr($argument, 0, $length) === "$key=") {
-            $this->recordValue($record, substr($argument, $length));
-
-            return true;
-        }
-
-        return false;
     }
 
-    private function recordValue(?Closure $record, $value): void
+    private function initProjectDirectory(): void
     {
-        if ($record) {
-            $record($value);
-        }
+        $base = dirname(realpath($this->configFile) ?: '.') ?: '.';
+        $this->projectDirectory = isset($this->config['directory'])
+            ? rtrim($base, '/\\') . DIRECTORY_SEPARATOR . ltrim($this->config['directory'], '/\\')
+            : $base;
+        $this->composerFile = $this->projectDirectory . '/composer.json';
     }
 }

@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MultiTester\Traits;
 
-use MultiTester\Directory;
 use MultiTester\MultiTesterException;
 
 trait ErrorHandler
@@ -11,7 +12,7 @@ trait ErrorHandler
 
     protected function error($message): void
     {
-        (new Directory($this->getWorkingDirectory()))->remove();
+        $this->removeWorkingDirectory();
 
         throw $message instanceof MultiTesterException ?
             new MultiTesterException($message->getMessage(), 0, $message) :

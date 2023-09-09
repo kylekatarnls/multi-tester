@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MultiTester\Traits;
 
 trait TravisFile
@@ -9,18 +11,12 @@ trait TravisFile
      */
     protected $travisFile = '.travis.yml';
 
-    /**
-     * @return string
-     */
-    public function getTravisFile()
+    public function getTravisFile(): string
     {
         return $this->travisFile;
     }
 
-    /**
-     * @param string $travisFile
-     */
-    public function setTravisFile($travisFile)
+    public function setTravisFile(string $travisFile): void
     {
         $this->travisFile = $travisFile;
     }
