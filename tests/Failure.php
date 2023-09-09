@@ -6,7 +6,7 @@ use MultiTester\Directory;
 
 class Failure extends Directory
 {
-    public function copy($destination, $exceptions = [])
+    public function copy($destination, $exceptions = []): bool
     {
         if (substr($this->path, -3) === 'biz') {
             return false;
@@ -15,7 +15,7 @@ class Failure extends Directory
         return parent::copy($destination, $exceptions);
     }
 
-    public function clean()
+    public function clean(): bool
     {
         if (substr($this->path, -3) === 'biz') {
             return false;

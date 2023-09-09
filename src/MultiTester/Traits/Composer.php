@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MultiTester\Traits;
 
 trait Composer
 {
-    protected function getComposerProgram($settings): string
+    protected function getComposerProgram(array $settings): string
     {
         if (isset($settings['composer'])) {
             $version = $settings['composer'];

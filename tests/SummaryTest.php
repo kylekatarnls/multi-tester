@@ -10,7 +10,7 @@ class SummaryTest extends TestCase
     /**
      * @throws \MultiTester\MultiTesterException
      */
-    public function testColor()
+    public function testColor(): void
     {
         $config = [
             'color_support' => true,
@@ -34,7 +34,7 @@ class SummaryTest extends TestCase
     /**
      * @throws \MultiTester\MultiTesterException
      */
-    public function testIsSuccessful()
+    public function testIsSuccessful(): void
     {
         $summary = new Summary([]);
 
@@ -58,7 +58,7 @@ class SummaryTest extends TestCase
     /**
      * @throws \MultiTester\MultiTesterException
      */
-    public function testGet()
+    public function testGet(): void
     {
         $config = [
             'color_support' => false,

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MultiTester\Traits;
 
 trait Verbose
@@ -9,18 +11,12 @@ trait Verbose
      */
     protected $verbose = false;
 
-    /**
-     * @return bool
-     */
-    public function isVerbose()
+    public function isVerbose(): bool
     {
         return $this->verbose;
     }
 
-    /**
-     * @param bool $verbose
-     */
-    public function setVerbose($verbose)
+    public function setVerbose(bool $verbose): void
     {
         $this->verbose = $verbose;
     }

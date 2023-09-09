@@ -12,7 +12,7 @@ class GitHubTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testGetCurl()
+    public function testGetCurl(): void
     {
         $calls = [];
         $gitHub = new GitHub('vendor/library', function ($command) use (&$calls) {
@@ -30,7 +30,7 @@ class GitHubTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testGetJSON()
+    public function testGetJSON(): void
     {
         $gitHub = new GitHub('vendor/library', function () {
             return '{"foo": "bar"}';
@@ -46,7 +46,7 @@ class GitHubTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testIsSuccessful()
+    public function testIsSuccessful(): void
     {
         $gitHub = new GitHub('vendor/library', function (string $url) {
             $getUrl = function (string $sha): string {
@@ -88,7 +88,7 @@ class GitHubTest extends TestCase
         $this->assertFalse($isSuccessful->invoke($gitHub, 'b34'));
     }
 
-    public function testGetFirstSuccessfulCommit()
+    public function testGetFirstSuccessfulCommit(): void
     {
         $gitHub = new GitHub('vendor/library', function (string $url) {
             $getUrl = function (string $url): string {
@@ -141,7 +141,7 @@ class GitHubTest extends TestCase
     /**
      * @throws MultiTesterException
      */
-    public function testGetFirstSuccessfulCommitFailure()
+    public function testGetFirstSuccessfulCommitFailure(): void
     {
         $this->expectException(MultiTesterException::class);
         $this->expectExceptionMessage('No successful commit found in the 2 last commits of vendor/library.');
@@ -197,7 +197,7 @@ class GitHubTest extends TestCase
     /**
      * @throws MultiTesterException
      */
-    public function testGetFirstSuccessfulCommitFailureWithBranch()
+    public function testGetFirstSuccessfulCommitFailureWithBranch(): void
     {
         $this->expectException(MultiTesterException::class);
         $this->expectExceptionMessage('No successful commit found in the 2 last commits on master of vendor/library.');

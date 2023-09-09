@@ -8,7 +8,7 @@ use ReflectionMethod;
 
 class DirectoryTest extends TestCase
 {
-    public function testDirectoryTools()
+    public function testDirectoryTools(): void
     {
         $testDirectory = sys_get_temp_dir() . '/test-' . mt_rand(0, 999999);
         @mkdir($testDirectory, 0777, true);
@@ -71,7 +71,7 @@ class DirectoryTest extends TestCase
         $this->assertFileNotExists($testDirectory);
     }
 
-    public function testCopyItem()
+    public function testCopyItem(): void
     {
         $testDirectory = sys_get_temp_dir() . '/test-' . mt_rand(0, 999999);
         @mkdir($testDirectory, 0777, true);
@@ -91,7 +91,7 @@ class DirectoryTest extends TestCase
         $this->assertFileNotExists($testDirectory);
     }
 
-    public function testCleanItem()
+    public function testCleanItem(): void
     {
         $testDirectory = sys_get_temp_dir() . '/test-' . mt_rand(0, 999999);
         @mkdir($testDirectory, 0777, true);

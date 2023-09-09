@@ -12,7 +12,7 @@ use ReflectionMethod;
 
 class MultiTesterTest extends TestCase
 {
-    public function testMultiTesterFile()
+    public function testMultiTesterFile(): void
     {
         $tester = new MultiTester();
 
@@ -21,7 +21,7 @@ class MultiTesterTest extends TestCase
         $this->assertSame('foo.yml', $tester->getMultiTesterFile());
     }
 
-    public function testTravisFile()
+    public function testTravisFile(): void
     {
         $tester = new MultiTester();
 
@@ -30,7 +30,7 @@ class MultiTesterTest extends TestCase
         $this->assertSame('foo.yml', $tester->getTravisFile());
     }
 
-    public function testWorkingDirectory()
+    public function testWorkingDirectory(): void
     {
         $tester = new MultiTester();
 
@@ -39,7 +39,7 @@ class MultiTesterTest extends TestCase
         $this->assertSame('foo/', $tester->getWorkingDirectory());
     }
 
-    public function testStorageDirectory()
+    public function testStorageDirectory(): void
     {
         $tester = new MultiTester();
 
@@ -53,7 +53,7 @@ class MultiTesterTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testGetTravisSettings()
+    public function testGetTravisSettings(): void
     {
         $tester = new MultiTester();
         $method = new ReflectionMethod($tester, 'getTravisSettings');
@@ -98,7 +98,7 @@ class MultiTesterTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testGetConfig()
+    public function testGetConfig(): void
     {
         $tester = new MultiTester();
 
@@ -125,7 +125,7 @@ class MultiTesterTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testExtractVersion()
+    public function testExtractVersion(): void
     {
         $tester = new MultiTester();
 
@@ -160,7 +160,7 @@ class MultiTesterTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testRemoveDirectories()
+    public function testRemoveDirectories(): void
     {
         $tester = new MultiTester();
 
@@ -185,7 +185,7 @@ class MultiTesterTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testPrepareWorkingDirectory()
+    public function testPrepareWorkingDirectory(): void
     {
         $tester = new MultiTester();
         $method = new ReflectionMethod($tester, 'getTravisSettings');
@@ -199,13 +199,14 @@ class MultiTesterTest extends TestCase
         $prepareWorkingDirectory->invokeArgs($tester, [&$directories]);
 
         $this->assertSame([$tester->getWorkingDirectory()], $directories);
-        $this->assertSame(realpath($tester->getWorkingDirectory()), getcwd());
+        $cwd = @getcwd();
+        $this->assertSame(realpath($tester->getWorkingDirectory()), $cwd);
     }
 
     /**
      * @throws \ReflectionException
      */
-    public function testPrepareWorkingDirectoryCreationError()
+    public function testPrepareWorkingDirectoryCreationError(): void
     {
         $file = 'is-a-file';
         touch($file);
@@ -231,7 +232,7 @@ class MultiTesterTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testGetComposerSettings()
+    public function testGetComposerSettings(): void
     {
         $tester = new MultiTester();
         $method = new ReflectionMethod($tester, 'getComposerSettings');
@@ -256,7 +257,7 @@ class MultiTesterTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testLibrariesIoFallback()
+    public function testLibrariesIoFallback(): void
     {
         $tester = new MultiTester();
         $method = new ReflectionMethod($tester, 'getComposerSettings');
@@ -283,7 +284,7 @@ class MultiTesterTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testInvalidPlatform()
+    public function testInvalidPlatform(): void
     {
         $this->expectException(MultiTesterException::class);
         $this->expectExceptionMessage("Unknown platform 'foobar'");
@@ -298,7 +299,7 @@ class MultiTesterTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testOutput()
+    public function testOutput(): void
     {
         $tester = new MultiTester();
         $output = new ReflectionMethod($tester, 'output');
@@ -316,7 +317,7 @@ class MultiTesterTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testInfo()
+    public function testInfo(): void
     {
         $tester = new MultiTester();
         $info = new ReflectionMethod($tester, 'info');
@@ -348,7 +349,7 @@ class MultiTesterTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testExec()
+    public function testExec(): void
     {
         $tester = new MultiTester();
         $exec = new ReflectionMethod($tester, 'exec');
@@ -382,7 +383,7 @@ class MultiTesterTest extends TestCase
     /**
      * @throws \ReflectionException
      */
-    public function testError()
+    public function testError(): void
     {
         $tester = new MultiTester();
         $error = new ReflectionMethod($tester, 'error');
@@ -419,7 +420,7 @@ class MultiTesterTest extends TestCase
      * @throws MultiTesterException
      * @throws \ReflectionException
      */
-    public function testTestProject()
+    public function testTestProject(): void
     {
         $tester = new MultiTester();
         $directory = sys_get_temp_dir() . '/test-' . mt_rand(0, 99999);
@@ -499,9 +500,8 @@ class MultiTesterTest extends TestCase
 
     /**
      * @throws MultiTesterException
-     * @throws \ReflectionException
      */
-    public function testRun()
+    public function testRun(): void
     {
         $exit0 = 'php ' . escapeshellarg(realpath(__DIR__ . '/exit-0.php'));
         $tester = new MultiTester();
