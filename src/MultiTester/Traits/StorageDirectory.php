@@ -9,18 +9,12 @@ trait StorageDirectory
      */
     protected $storageDirectory = null;
 
-    /**
-     * @return string
-     */
-    public function getStorageDirectory()
+    public function getStorageDirectory(): string
     {
         return $this->storageDirectory;
     }
 
-    /**
-     * @param string $storageDirectory
-     */
-    public function setStorageDirectory($storageDirectory)
+    public function setStorageDirectory(string $storageDirectory): void
     {
         $this->storageDirectory = $storageDirectory;
     }
