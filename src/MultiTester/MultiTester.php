@@ -111,6 +111,8 @@ class MultiTester
     }
 
     /**
+     * @param string[] $arguments
+     *
      * @throws MultiTesterException
      */
     public function run(array $arguments): bool
@@ -149,6 +151,8 @@ class MultiTester
     }
 
     /**
+     * @param string[] $arguments
+     *
      * @throws MultiTesterException
      */
     protected function getConfig(array $arguments): Config
@@ -161,6 +165,8 @@ class MultiTester
     }
 
     /**
+     * @param string[]|null $directories
+     *
      * @throws MultiTesterException
      */
     protected function prepareWorkingDirectory(?array &$directories = null): void

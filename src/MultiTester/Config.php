@@ -70,13 +70,13 @@ class Config
      * Config constructor.
      *
      * @param MultiTester $multiTester
-     * @param array       $arguments
+     * @param string[]    $arguments
      *
      * @throws MultiTesterException
      */
     public function __construct(MultiTester $multiTester, array $arguments)
     {
-        $arguments = $this->filterArguments($arguments, '--add', function ($value) {
+        $arguments = $this->filterArguments($arguments, '--add', function ($value): void {
             $this->adds[] = (string) $value;
         });
         $this->tester = $multiTester;
@@ -121,6 +121,7 @@ class Config
         return $this->tester;
     }
 
+    /** @param string[] $arguments */
     protected function filterArguments(array $arguments, string $key, ?Closure $record = null): array
     {
         $result = [];
@@ -128,13 +129,7 @@ class Config
         $length = strlen($key) + 1;
 
         foreach ($arguments as $argument) {
-            if ($this->checkArgumentMatch($match, $record, $key, $argument)) {
-                continue;
-            }
-
-            if (substr($argument, 0, $length) === "$key=") {
-                $this->recordValue($record, substr($argument, $length));
-
+            if ($this->checkArgumentMatch($match, $record, $key, $argument, $length)) {
                 continue;
             }
 
@@ -175,8 +170,13 @@ class Config
         $this->packageName = $this->data['name'];
     }
 
-    private function checkArgumentMatch(bool &$match, ?Closure $record, string $key, $argument): bool
-    {
+    private function checkArgumentMatch(
+        bool &$match,
+        ?Closure $record,
+        string $key,
+        string $argument,
+        int $length
+    ): bool {
         if ($match) {
             $match = false;
             $this->recordValue($record, $argument);
@@ -186,6 +186,12 @@ class Config
 
         if ($argument === $key) {
             $match = true;
+
+            return true;
+        }
+
+        if (substr($argument, 0, $length) === "$key=") {
+            $this->recordValue($record, substr($argument, $length));
 
             return true;
         }
