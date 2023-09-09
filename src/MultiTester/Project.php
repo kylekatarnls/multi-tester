@@ -4,75 +4,30 @@ namespace MultiTester;
 
 use ArrayAccess;
 use Composer\Semver\Semver;
+use MultiTester\Traits\Composer;
+use MultiTester\Traits\ConfigHandler;
+use MultiTester\Traits\PackageNameHandler;
+use MultiTester\Traits\Settings;
 
 class Project
 {
-    /**
-     * @var Config Configuration of the tester.
-     */
-    protected $config;
+    use ConfigHandler;
+    use Composer;
+    use PackageNameHandler;
+    use Settings;
 
-    /**
-     * @var array|string Settings of the particular project.
-     */
-    protected $settings;
-
-    /**
-     * @var string
-     */
-    protected $package;
-
-    public function __construct($package, Config $config, $settings)
+    public function __construct(string $package, Config $config, $settings = null)
     {
         $this->config = $config;
         $this->settings = $settings;
-        $this->package = $package;
-    }
-
-    /**
-     * @return array
-     */
-    public function getSettings()
-    {
-        $settings = $this->settings;
-
-        if ($settings === 'travis') {
-            $settings = [
-                'script'  => 'travis',
-                'install' => 'travis',
-            ];
-        }
-
-        if (!is_array($settings)) {
-            $settings = [];
-        }
-
-        return $settings;
-    }
-
-    /**
-     * @return Config
-     */
-    public function getConfig()
-    {
-        return $this->config;
-    }
-
-    /**
-     * @return string
-     */
-    public function getPackage()
-    {
-        return $this->package;
+        $this->packageName = $package;
     }
 
     /**
      * @throws MultiTesterException
      * @throws TestFailedException
-     *
-     * @return bool
      */
-    public function test()
+    public function test(): bool
     {
         $this->download();
         $this->install();
@@ -82,18 +37,14 @@ class Project
 
     public function removeReplacedPackages()
     {
-        if (!isset($this->config->data['replace'])) {
-            return;
-        }
-
-        $replace = (array) $this->config->data['replace'];
+        $replace = (array) ($this->config->data['replace'] ?? []);
 
         foreach ($replace as $package => $version) {
             (new Directory('vendor/' . $package, $this->config->executor))->remove();
         }
     }
 
-    protected function getScript($script)
+    protected function getScript($script): array
     {
         $script = is_array($script) ? $script : [$script];
 
@@ -147,7 +98,7 @@ class Project
      *
      * @return string
      */
-    protected function filterVersion($version, $versions)
+    protected function filterVersion($version, array $versions): ?string
     {
         usort($versions, 'version_compare');
 
@@ -159,20 +110,14 @@ class Project
 
         $filteredVersions = count($filteredVersions) ? $filteredVersions : $versions;
 
-        return end($filteredVersions);
+        return end($filteredVersions) ?: null;
     }
 
-    /**
-     * @param array $settings
-     */
-    protected function seedSourceSetting(&$settings)
+    protected function seedSourceSetting(array &$settings): void
     {
         if (!isset($settings['source'])) {
-            if (!isset($settings['version'])) {
-                $settings['version'] = 'dev-master';
-            }
-
-            $package = $this->getPackage();
+            $settings['version'] = (string) ($settings['version'] ?? 'dev-master');
+            $package = $this->getPackageName();
             $tester = $this->getConfig()->getTester();
             $composerSettings = $tester->getComposerSettings($package, $settings['platforms'] ?? null);
             $version = is_array($composerSettings)
@@ -196,14 +141,12 @@ class Project
     }
 
     /**
-     * @param array $settings
-     *
      * @throws MultiTesterException
      */
-    protected function checkSourceSetting($settings)
+    protected function checkSourceSetting(array $settings): void
     {
         if (!isset($settings['source'])) {
-            $package = $this->getPackage();
+            $package = $this->getPackageName();
 
             throw new MultiTesterException("Source not found for $package, you must provide it manually via a 'source' entry.");
         }
@@ -217,92 +160,51 @@ class Project
         }
     }
 
-    protected function asArray(&$value)
-    {
-        if (!is_array($value)) {
-            $value = [$value];
-        }
-    }
-
     /**
-     * @param array $settings
-     *
      * @throws MultiTesterException
      */
-    protected function seedCloneSetting(&$settings)
+    protected function seedCloneSetting(array &$settings): void
     {
         if (!isset($settings['clone'])) {
             $this->seedSourceSetting($settings);
             $this->checkSourceSetting($settings);
-            $settings['clone'] = ['git clone ' . $settings['source']['url'] . ' .' . ($this->config->quiet ? ' --quiet' : '')];
-            $reference = $settings['source']['reference'] ?? null;
-            $successOnly = $settings['source']['success_only'] ?? false;
-
-            if ($reference || $successOnly) {
-                if ($successOnly ?? false) {
-                    if (!preg_match('/(?:https?:\/\/github\.com\/|git@github\.com:)([^\/]+\/[^\/]+)(?:\.git)?$/U', $settings['source']['url'], $match)) {
-                        throw new MultiTesterException("'success_only' can be used only with github.com source URLs for now.");
-                    }
-
-                    $gitHub = new GitHub($match[1], $this->config->executor);
-                    $reference = $gitHub->getFirstSuccessfulCommit($reference);
-                }
-
-                $settings['clone'][] = 'git checkout ' . $reference . ($this->config->quiet ? ' --quiet' : '');
-            }
+            $cloner = new Cloner($this->config);
+            $settings['clone'] = $cloner->getCloneCommands($settings);
         }
 
         $this->asArray($settings['clone']);
     }
 
-    protected function getComposerProgram($settings)
+    protected function seedSetting(array &$settings, string $key, string $name, string $defaultCommand): void
     {
-        if (isset($settings['composer'])) {
-            $version = $settings['composer'];
-
-            if (!file_exists("composer-$version.phar")) {
-                copy(
-                    "https://getcomposer.org/download/$version/composer.phar",
-                    "composer-$version.phar"
-                );
-            }
-
-            return "composer-$version.phar";
-        }
-
-        return 'composer';
-    }
-
-    /**
-     * @param array $settings
-     */
-    protected function seedSetting(&$settings, $key, $name, $defaultCommand)
-    {
-        $tester = $this->getConfig()->getTester();
-
         if (!isset($settings[$key]) || $settings[$key] === 'default') {
             if (!isset($settings[$key])) {
-                $tester->output("No $name found, '$defaultCommand' used by default, add a '$key' entry if you want to customize it.\n");
+                $this->getConfig()->getTester()->output(
+                    "No $name found, '$defaultCommand' used by default, add a '$key' entry if you want to customize it.\n"
+                );
             }
 
             $settings[$key] = $defaultCommand;
         }
 
+        $this->replaceTravisSetting($settings, $key, $name);
+        $this->asArray($settings[$key]);
+    }
+
+    protected function replaceTravisSetting(array &$settings, string $key, string $name): void
+    {
         if ($settings[$key] === 'travis') {
+            $tester = $this->getConfig()->getTester();
             $travisSettings = $tester->getTravisSettings();
+
             if (isset($travisSettings[$key])) {
                 $tester->output(ucfirst($name) . ' found in ' . $tester->getTravisFile() . ", add a '$key' entry if you want to customize it.\n");
                 $settings[$key] = $travisSettings[$key];
             }
         }
-
-        $this->asArray($settings[$key]);
     }
 
-    /**
-     * @param array $settings
-     */
-    protected function seedAutoloadSetting(&$settings)
+    protected function seedAutoloadSetting(array &$settings): void
     {
         $this->seedSetting(
             $settings,
@@ -314,10 +216,7 @@ class Project
         );
     }
 
-    /**
-     * @param array $settings
-     */
-    protected function seedInstallSetting(&$settings)
+    protected function seedInstallSetting(array &$settings): void
     {
         $this->seedSetting(
             $settings,
@@ -329,10 +228,7 @@ class Project
         );
     }
 
-    /**
-     * @param array $settings
-     */
-    protected function seedScriptSetting(&$settings)
+    protected function seedScriptSetting(array &$settings): void
     {
         $this->seedSetting(
             $settings,
@@ -348,7 +244,7 @@ class Project
     protected function download()
     {
         $settings = $this->getSettings();
-        $package = $this->getPackage();
+        $package = $this->getPackageName();
         $config = $this->getConfig();
         $tester = $config->getTester();
 
@@ -372,7 +268,7 @@ class Project
     protected function install()
     {
         $settings = $this->getSettings();
-        $package = $this->getPackage();
+        $package = $this->getPackageName();
         $config = $this->getConfig();
         $tester = $config->getTester();
 
@@ -399,7 +295,7 @@ class Project
     protected function autoload()
     {
         $settings = $this->getSettings();
-        $package = $this->getPackage();
+        $package = $this->getPackageName();
         $config = $this->getConfig();
         $tester = $config->getTester();
 
@@ -412,13 +308,11 @@ class Project
 
     /**
      * @throws MultiTesterException|TestFailedException
-     *
-     * @return bool
      */
-    protected function exec()
+    protected function exec(): bool
     {
         $settings = $this->getSettings();
-        $package = $this->getPackage();
+        $package = $this->getPackageName();
         $config = $this->getConfig();
         $tester = $config->getTester();
 

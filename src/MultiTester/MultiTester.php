@@ -28,19 +28,20 @@ class MultiTester
      */
     protected $travisSettings = null;
 
-    public function __construct($storageDirectory = null)
+    public function __construct(?string $storageDirectory = null)
     {
         $this->storageDirectory = $storageDirectory ?: sys_get_temp_dir();
     }
 
-    public function exec($command, $quiet = false)
+    /** @param array|string $command */
+    public function exec($command, bool $quiet = false): bool
     {
         return is_array($command)
             ? $this->execCommands($command, $quiet)
             : $this->execCommand($command, $quiet);
     }
 
-    public function getComposerSettings($package, $platforms = null)
+    public function getComposerSettings(string $package, $platforms = null): ?array
     {
         if (!isset($this->composerSettings[$package])) {
             $sourceFinder = new SourceFinder($this->getWorkingDirectory());
@@ -50,7 +51,7 @@ class MultiTester
         return $this->composerSettings[$package];
     }
 
-    public function output($text)
+    public function output(string $text): void
     {
         $streams = $this->getProcStreams();
         $stdout = is_array($streams) && isset($streams[1]) ? $streams[1] : null;
@@ -66,14 +67,14 @@ class MultiTester
         echo $text;
     }
 
-    public function info($text)
+    public function info(string $text): void
     {
         if ($this->isVerbose()) {
             $this->output($text);
         }
     }
 
-    public function framedInfo($text)
+    public function framedInfo(string $text): void
     {
         $lines = explode("\n", trim($text));
         $widths = array_map('mb_strlen', $lines);
@@ -88,6 +89,7 @@ class MultiTester
         $this->info("$bar\n$text\n$bar\n");
     }
 
+    /** @return array|File */
     public function getTravisSettings()
     {
         if (!$this->travisSettings) {
@@ -103,19 +105,15 @@ class MultiTester
         return $this->travisSettings;
     }
 
-    public function clearTravisSettingsCache()
+    public function clearTravisSettingsCache(): void
     {
         $this->travisSettings = null;
     }
 
     /**
-     * @param array $arguments
-     *
      * @throws MultiTesterException
-     *
-     * @return bool
      */
-    public function run(array $arguments)
+    public function run(array $arguments): bool
     {
         $config = $this->getConfig($arguments);
         $this->setVerbose($config->verbose);
@@ -151,31 +149,21 @@ class MultiTester
     }
 
     /**
-     * @param array $arguments
-     *
      * @throws MultiTesterException
-     *
-     * @return Config
      */
-    protected function getConfig(array $arguments)
+    protected function getConfig(array $arguments): Config
     {
-        $config = null;
-
         try {
-            $config = new Config($this, $arguments);
+            return new Config($this, $arguments);
         } catch (MultiTesterException $exception) {
             $this->error($exception);
         }
-
-        return $config;
     }
 
     /**
-     * @param array|null $directories
-     *
      * @throws MultiTesterException
      */
-    protected function prepareWorkingDirectory(&$directories = null)
+    protected function prepareWorkingDirectory(?array &$directories = null): void
     {
         $directory = $this->getStorageDirectory() . '/multi-tester-' . mt_rand(0, 9999999);
         $this->info("working directory: $directory\n");
@@ -195,7 +183,7 @@ class MultiTester
         }
     }
 
-    protected function extractVersion(&$package, &$settings)
+    protected function extractVersion(&$package, array &$settings): void
     {
         [$package, $version] = explode(':', "$package:");
 
@@ -204,7 +192,7 @@ class MultiTester
         }
     }
 
-    protected function removeDirectories($directories)
+    protected function removeDirectories(array $directories): void
     {
         foreach ($directories as $directory) {
             (new Directory($directory))->remove();
@@ -212,14 +200,9 @@ class MultiTester
     }
 
     /**
-     * @param string $package
-     * @param Config $config
-     * @param array  $settings
-     * @param bool   $state
-     *
      * @throws MultiTesterException
      */
-    protected function testProject($package, $config, $settings, &$state)
+    protected function testProject(string $package, Config $config, array $settings, bool &$state): void
     {
         try {
             (new Project($package, $config, $settings))->test();
@@ -234,7 +217,7 @@ class MultiTester
         }
     }
 
-    protected function execCommand($command, $quiet = false)
+    protected function execCommand(string $command, bool $quiet = false): bool
     {
         $command = trim(preg_replace('/^\s*travis_retry\s/', '', $command));
 
@@ -263,7 +246,7 @@ class MultiTester
         return proc_close($process) === 0 || $status['exitcode'] === 0;
     }
 
-    protected function execCommands($commands, $quiet = false)
+    protected function execCommands(array $commands, bool $quiet = false): bool
     {
         foreach ($commands as $command) {
             if (!$this->execCommand($command, $quiet)) {

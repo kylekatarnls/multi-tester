@@ -2,6 +2,8 @@
 
 namespace MultiTester;
 
+use Closure;
+
 class Config
 {
     /**
@@ -74,7 +76,9 @@ class Config
      */
     public function __construct(MultiTester $multiTester, array $arguments)
     {
-        $arguments = $this->filterArguments($arguments, '--add');
+        $arguments = $this->filterArguments($arguments, '--add', function ($value) {
+            $this->adds[] = (string) $value;
+        });
         $this->tester = $multiTester;
         $this->verbose = in_array('--verbose', $arguments, true) || in_array('-v', $arguments, true);
         $this->quiet = in_array('--quiet-install', $arguments, true) || in_array('-q', $arguments, true);
@@ -112,36 +116,24 @@ class Config
         }
     }
 
-    /**
-     * @return MultiTester
-     */
-    public function getTester()
+    public function getTester(): MultiTester
     {
         return $this->tester;
     }
 
-    protected function filterArguments($arguments, $key)
+    protected function filterArguments(array $arguments, string $key, ?Closure $record = null): array
     {
         $result = [];
-        $add = false;
+        $match = false;
         $length = strlen($key) + 1;
 
         foreach ($arguments as $argument) {
-            if ($add) {
-                $add = false;
-                $this->adds[] = $argument;
-
-                continue;
-            }
-
-            if ($argument === $key) {
-                $add = true;
-
+            if ($this->checkArgumentMatch($match, $record, $key, $argument)) {
                 continue;
             }
 
             if (substr($argument, 0, $length) === "$key=") {
-                $this->adds[] = substr($argument, $length);
+                $this->recordValue($record, substr($argument, $length));
 
                 continue;
             }
@@ -181,5 +173,30 @@ class Config
         }
 
         $this->packageName = $this->data['name'];
+    }
+
+    private function checkArgumentMatch(bool &$match, ?Closure $record, string $key, $argument): bool
+    {
+        if ($match) {
+            $match = false;
+            $this->recordValue($record, $argument);
+
+            return true;
+        }
+
+        if ($argument === $key) {
+            $match = true;
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private function recordValue(?Closure $record, $value): void
+    {
+        if ($record) {
+            $record($value);
+        }
     }
 }

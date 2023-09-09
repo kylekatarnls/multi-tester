@@ -73,7 +73,7 @@ class ProjectTest extends TestCase
 
         $project = new Project('foo/bar', $config, null);
 
-        $this->assertSame('foo/bar', $project->getPackage());
+        $this->assertSame('foo/bar', $project->getPackageName());
     }
 
     /**
