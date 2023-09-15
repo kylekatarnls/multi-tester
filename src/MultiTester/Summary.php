@@ -16,35 +16,18 @@ class Summary
      */
     protected $config;
 
-    public function __construct($state, $config = [])
+    public function __construct(array $state, array $config = [])
     {
         $this->state = $state;
         $this->config = $config;
     }
 
-    /**
-     * @return bool
-     */
-    public function isColored()
+    public function isColored(): bool
     {
-        return $this->config['color_support'] ??
-            // @codeCoverageIgnoreStart
-            (
-                DIRECTORY_SEPARATOR === '\\'
-                ? false !== getenv('ANSICON') ||
-                'ON' === getenv('ConEmuANSI') ||
-                false !== getenv('BABUN_HOME')
-                : (false !== getenv('BABUN_HOME')) ||
-                function_exists('posix_isatty') &&
-                @posix_isatty(STDOUT)
-            );
-        // @codeCoverageIgnoreEnd
+        return $this->config['color_support'] ?? true;
     }
 
-    /**
-     * @return string
-     */
-    public function get()
+    public function get(): string
     {
         $count = count($this->state);
         $pad = max(array_map('strlen', array_keys($this->state)));
@@ -73,10 +56,7 @@ class Summary
         return $output;
     }
 
-    /**
-     * @return bool
-     */
-    public function isSuccessful()
+    public function isSuccessful(): bool
     {
         return array_sum($this->state) === count($this->state);
     }

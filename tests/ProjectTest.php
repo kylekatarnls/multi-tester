@@ -379,6 +379,16 @@ class ProjectTest extends TestCase
         $seedSourceSetting->invokeArgs($project, [&$settings]);
 
         $this->assertNull($settings['source']);
+
+        $settings = [
+            'source' => ['url' => 'something.git'],
+        ];
+        $seedSourceSetting->invokeArgs($project, [&$settings]);
+
+        $this->assertSame([
+            'url'  => 'something.git',
+            'type' => 'git',
+        ], $settings['source']);
     }
 
     public function testCheckSourceSettingGit(): void
@@ -469,7 +479,7 @@ class ProjectTest extends TestCase
 
         $this->assertSame([
             'git clone https://github.com/pug-php/pug.git .',
-            'git checkout a12',
+            'git checkout --detach a12',
         ], $settings['clone']);
     }
 
@@ -599,7 +609,7 @@ class ProjectTest extends TestCase
         $this->assertIsArray($clone);
         $this->assertCount(2, $clone);
         $this->assertSame('git clone https://github.com/pug-php/pug.git .', $clone[0]);
-        $this->assertRegExp('/^git checkout [0-9a-f]+$/', $clone[1]);
+        $this->assertRegExp('/^git checkout --detach [0-9a-f]+$/', $clone[1]);
     }
 
     /**
@@ -656,6 +666,15 @@ class ProjectTest extends TestCase
             'travis',
         ], $settings['install']);
 
+        $settings = [
+            'install' => 'github',
+        ];
+        $seedInstallSetting->invokeArgs($project, [&$settings]);
+
+        $this->assertSame([
+            'github',
+        ], $settings['install']);
+
         $project = new Project('nesbot/carbon', $config, []);
         $seedInstallSetting = new ReflectionMethod($project, 'seedInstallSetting');
         $seedInstallSetting->setAccessible(true);
@@ -663,7 +682,7 @@ class ProjectTest extends TestCase
         $settings = [
             'install' => 'travis',
         ];
-        file_put_contents('.travis.yml', implode("\n", [
+        self::writeContent('.travis.yml', implode("\n", [
             'install:',
             '  - hello',
             '  - world',
@@ -674,6 +693,57 @@ class ProjectTest extends TestCase
         $this->assertSame([
             'hello',
             'world',
+        ], $settings['install']);
+
+        $settings = [
+            'install' => 'github',
+        ];
+        @mkdir('.github/workflows', 0777, true);
+        $workflowFile = '.github/workflows/tests.yml';
+
+        self::writeContent($workflowFile, implode("\n", [
+            'name: Tests',
+            'jobs: foobar',
+        ]));
+        $seedInstallSetting->invokeArgs($project, [&$settings]);
+
+        $this->assertSame([
+            'github',
+        ], $settings['install']);
+
+        $settings = [
+            'install' => 'github',
+        ];
+        self::writeContent($workflowFile, implode("\n", [
+            'name: Tests',
+            'jobs:',
+            '  tests:',
+            '    steps:',
+            '    - run: |',
+            '        first',
+            '        second',
+            '      env:',
+            '        MULTI_TESTER_LABELS: install',
+            '    - run: |',
+            '        some',
+            '        more',
+            '      env:',
+            '        MULTI_TESTER_LABELS: install, script',
+            '    - run: |',
+            '        third',
+            '    - run: |',
+            '        forth',
+            '        fifth',
+            '      env:',
+            '        MULTI_TESTER_LABELS: script',
+        ]));
+        $seedInstallSetting->invokeArgs($project, [&$settings]);
+        @unlink($workflowFile);
+        @rmdir('.github/workflows');
+        @rmdir('.github');
+        $this->assertSame([
+            "first\nsecond\n",
+            "some\nmore\n",
         ], $settings['install']);
 
         @unlink($buffer);
@@ -729,7 +799,7 @@ class ProjectTest extends TestCase
         $settings = [
             'script' => 'travis',
         ];
-        file_put_contents('.travis.yml', implode("\n", [
+        self::writeContent('.travis.yml', implode("\n", [
             'script:',
             '  - hello',
             '  - world',
@@ -796,5 +866,17 @@ class ProjectTest extends TestCase
         $removeReplacedPackages->setAccessible(true);
 
         $this->assertNull($removeReplacedPackages->invoke($project));
+    }
+
+    private static function writeContent(string $file, string $data): void
+    {
+        $result = file_put_contents($file, $data);
+
+        self::assertIsInt($result);
+        self::assertGreaterThan(1, $result);
+
+        $contents = @file_get_contents($file);
+
+        self::assertSame($data, $contents);
     }
 }

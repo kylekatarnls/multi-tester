@@ -4,31 +4,31 @@ declare(strict_types=1);
 
 namespace MultiTester;
 
+use ArrayObject;
+use MultiTester\Traits\Color;
 use MultiTester\Traits\ErrorHandler;
+use MultiTester\Traits\GithubSettings;
 use MultiTester\Traits\MultiTesterFile;
 use MultiTester\Traits\ProcStreams;
 use MultiTester\Traits\StorageDirectory;
-use MultiTester\Traits\TravisFile;
+use MultiTester\Traits\TravisSettings;
 use MultiTester\Traits\Verbose;
 
 class MultiTester
 {
+    use Color;
     use ErrorHandler;
+    use GithubSettings;
     use MultiTesterFile;
-    use TravisFile;
-    use StorageDirectory;
     use ProcStreams;
+    use StorageDirectory;
+    use TravisSettings;
     use Verbose;
 
     /**
      * @var array|File Composer package settings cache.
      */
     protected $composerSettings = [];
-
-    /**
-     * @var array|File|null Travis settings cache.
-     */
-    protected $travisSettings = null;
 
     public function __construct(?string $storageDirectory = null)
     {
@@ -56,7 +56,7 @@ class MultiTester
     public function output(string $text): void
     {
         $streams = $this->getProcStreams();
-        $stdout = is_array($streams) && isset($streams[1]) ? $streams[1] : null;
+        $stdout = $streams[1] ?? null;
 
         if (is_array($stdout) && $stdout[0] === 'file') {
             $file = fopen($stdout[1], $stdout[2]);
@@ -91,27 +91,6 @@ class MultiTester
         $this->info("$bar\n$text\n$bar\n");
     }
 
-    /** @return array|File */
-    public function getTravisSettings()
-    {
-        if (!$this->travisSettings) {
-            $travisFile = $this->getTravisFile();
-            if (file_exists($travisFile)) {
-                $this->travisSettings = new File($travisFile);
-            }
-            if (!$this->travisSettings) {
-                $this->travisSettings = [];
-            }
-        }
-
-        return $this->travisSettings;
-    }
-
-    public function clearTravisSettingsCache(): void
-    {
-        $this->travisSettings = null;
-    }
-
     /**
      * @param string[] $arguments
      *
@@ -121,11 +100,17 @@ class MultiTester
     {
         $config = $this->getConfig($arguments);
         $this->setVerbose($config->verbose);
+        $this->setColored($config->colored);
 
         if (count($config->adds)) {
             return true;
         }
 
+        return $this->runProjectTests($config);
+    }
+
+    protected function runProjectTests(Config $config): bool
+    {
         $directories = [];
         $cwd = @getcwd() ?: '.';
         $state = [];
@@ -145,7 +130,11 @@ class MultiTester
 
         $this->removeDirectories($directories);
 
-        $summary = new Summary($state, $config->config);
+        $subConfig = $config->config;
+        $summary = new Summary($state, array_merge(
+            ['color_support' => $config->colored],
+            $subConfig instanceof ArrayObject ? $subConfig->getArrayCopy() : $subConfig
+        ));
 
         $this->output("\n\n" . $summary->get());
 
@@ -190,11 +179,11 @@ class MultiTester
         }
     }
 
-    protected function extractVersion(&$package, array &$settings): void
+    protected function extractVersion(&$package, &$settings): void
     {
         [$package, $version] = explode(':', "$package:");
 
-        if ($version !== '' && !isset($settings['version'])) {
+        if ($version !== '' && is_array($settings) && !isset($settings['version'])) {
             $settings['version'] = $version;
         }
     }
@@ -207,19 +196,26 @@ class MultiTester
     }
 
     /**
+     * @param array|string|null $settings
+     *
      * @throws MultiTesterException
      */
-    protected function testProject(string $package, Config $config, array $settings, bool &$state): void
+    protected function testProject(string $package, Config $config, $settings, bool &$state): void
     {
         try {
             (new Project($package, $config, $settings))->test();
+
+            $this->output($this->withColor("  Success for: $package  ", '30;42') . "\n");
         } catch (TestFailedException $exception) {
             $state = false;
+
+            $this->output($this->withColor("  Failure for: $package  ", '30;41') . "\n");
 
             if ($config->config['stop_on_failure'] ?? false) {
                 $this->error($exception);
             }
         } catch (MultiTesterException $exception) {
+            $this->output($this->withColor("  Error for: $package  ", '30;41') . "\n");
             $this->error($exception);
         }
     }

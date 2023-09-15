@@ -438,7 +438,7 @@ class MultiTesterTest extends TestCase
             ['file', $buffer, 'a'],
             ['file', $buffer, 'a'],
         ]);
-        $config = new Config($tester, [__DIR__ . '/../bin/multi-tester']);
+        $config = new Config($tester, [__DIR__ . '/../bin/multi-tester', '--colors']);
         $exit0 = 'php ' . escapeshellarg(realpath(__DIR__ . '/exit-0.php'));
         $exit1 = 'php ' . escapeshellarg(realpath(__DIR__ . '/exit-1.php'));
         $state = true;
@@ -455,7 +455,11 @@ class MultiTesterTest extends TestCase
         @unlink($buffer);
 
         $this->assertTrue($state);
-        $this->assertSame(str_repeat("> $exit0\nSuccess command\n\n", 4), $output);
+        $this->assertSame(
+            str_repeat("> $exit0\nSuccess command\n\n", 4) .
+            "\033[30;42m  Success for: pug-php/pug  \033[0m\n",
+            $output
+        );
 
         $settings = [
             'clone'    => $exit0,
@@ -469,7 +473,12 @@ class MultiTesterTest extends TestCase
         @unlink($buffer);
 
         $this->assertFalse($state);
-        $this->assertSame(str_repeat("> $exit0\nSuccess command\n\n", 3) . "> $exit1\nFailure command\n\n", $output);
+        $this->assertSame(
+            str_repeat("> $exit0\nSuccess command\n\n", 3) .
+            "> $exit1\nFailure command\n\n" .
+            "\033[30;41m  Failure for: pug-php/pug  \033[0m\n",
+            $output
+        );
 
         (new Directory($directory))->remove();
 
@@ -491,9 +500,13 @@ class MultiTesterTest extends TestCase
             "\nsh: 0: getcwd() failed: No such file or directory" => '',
         ]);
         @unlink($buffer);
+        $output = trim(str_replace('Failure command', '', $output));
 
         $this->assertSame('Cloning pug-php/pug failed.', $message);
-        $this->assertSame("> $exit1", trim(str_replace('Failure command', '', $output)));
+        $this->assertSame(
+            "> $exit1\n\033[30;41m  Error for: pug-php/pug  \033[0m",
+            preg_replace('/\n{2,}/', "\n", $output)
+        );
 
         (new Directory($directory))->remove();
     }
@@ -526,7 +539,7 @@ class MultiTesterTest extends TestCase
             ['file', $buffer, 'a'],
         ]);
 
-        $success = $tester->run([]);
+        $success = $tester->run([null, '--no-colors']);
 
         $output = file_get_contents($buffer);
         @unlink($buffer);
@@ -535,6 +548,7 @@ class MultiTesterTest extends TestCase
         $this->assertTrue($success);
         $this->assertSame(
             str_repeat("> $exit0\nSuccess command\n\n", 4) .
+            "  Success for: some-project  \n" .
             "\n\nsome-project    Success\n\n" .
             "1 / 1     No project broken by current changes.\n",
             $output

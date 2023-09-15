@@ -30,7 +30,7 @@ final class Cloner
                 $reference = $this->getFirstSuccessfulCommit($url, $reference);
             }
 
-            $commands[] = 'git checkout ' . $reference . ($this->config->quiet ? ' --quiet' : '');
+            $commands[] = 'git checkout --detach ' . $reference . ($this->config->quiet ? ' --quiet' : '');
         }
 
         return $commands;

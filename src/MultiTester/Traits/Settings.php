@@ -15,11 +15,13 @@ trait Settings
     {
         $settings = $this->settings;
 
-        if ($settings === 'travis') {
-            return [
-                'script'  => 'travis',
-                'install' => 'travis',
-            ];
+        switch ($settings) {
+            case 'travis':
+            case 'github':
+                return [
+                    'script'  => $settings,
+                    'install' => $settings,
+                ];
         }
 
         return is_array($settings) ? $settings : [];
