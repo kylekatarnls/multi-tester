@@ -47,7 +47,14 @@ class MultiTester
     {
         if (!isset($this->composerSettings[$package])) {
             $sourceFinder = new SourceFinder($this->getWorkingDirectory());
-            $this->composerSettings[$package] = $sourceFinder->getFromFirstValidPlatform($package, $platforms);
+            $source = $sourceFinder->getFromFirstValidPlatform($package, $platforms);
+            $this->composerSettings[$package] = $source;
+
+            $this->info(
+                $source
+                    ? 'Source found in ' . $sourceFinder->getLastPlatformTried() . ".\n"
+                    : "Source not found.\n"
+            );
         }
 
         return $this->composerSettings[$package];

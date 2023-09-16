@@ -125,6 +125,7 @@ class Project
             $settings['version'] = (string) ($settings['version'] ?? 'dev-master');
             $package = $this->getPackageName();
             $tester = $this->getConfig()->getTester();
+            $tester->info("Searching source for $package:{$settings['version']}\n");
             $composerSettings = $tester->getComposerSettings($package, $settings['platforms'] ?? null);
             $version = is_array($composerSettings)
                 ? $this->filterVersion($settings['version'], array_keys((array) ($composerSettings ?: [])))
@@ -132,6 +133,9 @@ class Project
 
             $settings['source'] = $composerSettings[$version]['source']
                 ?? $this->getRepositoryUrl($composerSettings);
+            $sourceDump = json_encode($settings['source'], JSON_PRETTY_PRINT);
+
+            $tester->info("Found source for version '$version':\n$sourceDump\n");
         }
 
         if (
