@@ -49,10 +49,9 @@ trait GithubSettings
             $name = $step['name'] ?? $step['uses'] ?? $step['run'] ?? "$index";
             $name = is_string($name) ? $name : json_encode($name, JSON_PRETTY_PRINT);
             $run = $step['run'] ?? null;
-            $runDump = json_encode($run, JSON_PRETTY_PRINT);
-            $this->info("Scanning step: $name $runDump\n");
 
             if (is_string($run)) {
+                $this->info("Scanning step: $name $run\n");
                 $this->scanStep($step, preg_replace('/\$\{\{.*?}}/', '', $run));
             }
         }
@@ -60,9 +59,6 @@ trait GithubSettings
 
     private function scanStep($step, $run): void
     {
-        $envDump = json_encode($step['env'] ?? null, JSON_PRETTY_PRINT);
-        $this->info("Env: $envDump\n");
-
         if (isset($step['env']['MULTI_TESTER_LABELS'])) {
             $this->info('MULTI_TESTER_LABELS = ' . json_encode($step['env']['MULTI_TESTER_LABELS']) . ".\n");
             $labels = array_filter(preg_split(
