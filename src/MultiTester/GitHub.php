@@ -47,7 +47,7 @@ class GitHub
         });
 
         foreach ($checks as $check) {
-            if ($check['conclusion'] !== 'neutral' && $check['conclusion'] !== 'success') {
+            if (!in_array($check['conclusion'], ['neutral', 'success', null], true)) {
                 return false;
             }
         }
