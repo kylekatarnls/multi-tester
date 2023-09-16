@@ -22,29 +22,31 @@ class GitHub
         $this->executor = $executor;
     }
 
-    private function getCurl(string $url): ?string
+    private function getCurl(string $url): string
     {
         $token = getenv('GITHUB_TOKEN');
+        $completeUrl = "https://api.github.com/repos/{$this->repo}/commits$url";
 
-        return ($this->executor)(
+        $response = ($this->executor)(
             'curl -s ' .
             '-H "Accept: application/vnd.github.antiope-preview+json" ' .
             (empty($token) ? '' : '-H "Authorization: token ' . $token . '" ') .
-            "https://api.github.com/repos/{$this->repo}/commits$url"
+            $completeUrl
         );
+
+        if (!$response) {
+            throw new MultiTesterException(
+                "Fetching $completeUrl " .
+                (getenv('GITHUB_TOKEN') ? 'with' : 'without') . ' GITHUB_TOKEN failed.'
+            );
+        }
+
+        return $response;
     }
 
     private function getJSON(string $url)
     {
-        $response = $this->getCurl($url);
-
-        if (!$response) {
-            throw new MultiTesterException(
-                "Fetching $url " . (getenv('GITHUB_TOKEN') ? 'with' : 'without') . " GITHUB_TOKEN failed.\n"
-            );
-        }
-
-        return json_decode($response, true);
+        return json_decode($this->getCurl($url), true);
     }
 
     private function isSuccessful(string $sha): bool

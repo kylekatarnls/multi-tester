@@ -197,6 +197,22 @@ class GitHubTest extends TestCase
     /**
      * @throws MultiTesterException
      */
+    public function testEmptyResponse(): void
+    {
+        $this->expectException(MultiTesterException::class);
+        $this->expectExceptionMessage(
+            'Fetching https://api.github.com/repos/vendor/library/commits without GITHUB_TOKEN failed.'
+        );
+
+        $gitHub = new GitHub('vendor/library', function () {
+            return '';
+        });
+        $gitHub->getFirstSuccessfulCommit();
+    }
+
+    /**
+     * @throws MultiTesterException
+     */
     public function testGetFirstSuccessfulCommitFailureWithBranch(): void
     {
         $this->expectException(MultiTesterException::class);
