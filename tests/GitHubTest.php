@@ -17,6 +17,8 @@ class GitHubTest extends TestCase
         $calls = [];
         $gitHub = new GitHub('vendor/library', function ($command) use (&$calls) {
             $calls[] = preg_replace('/-H "Authorization: token [^"]*"/', '', $command);
+
+            return '[]';
         });
         $getCurl = new ReflectionMethod($gitHub, 'getCurl');
         $getCurl->setAccessible(true);
@@ -199,9 +201,10 @@ class GitHubTest extends TestCase
      */
     public function testEmptyResponse(): void
     {
+        $word = getenv('GITHUB_TOKEN') ? 'with' : 'without';
         $this->expectException(MultiTesterException::class);
         $this->expectExceptionMessage(
-            'Fetching https://api.github.com/repos/vendor/library/commits without GITHUB_TOKEN failed.'
+            "Fetching https://api.github.com/repos/vendor/library/commits $word GITHUB_TOKEN failed."
         );
 
         $gitHub = new GitHub('vendor/library', function () {
