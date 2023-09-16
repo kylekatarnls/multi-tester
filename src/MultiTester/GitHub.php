@@ -36,7 +36,15 @@ class GitHub
 
     private function getJSON(string $url)
     {
-        return json_decode($this->getCurl($url), true);
+        $response = $this->getCurl($url);
+
+        if (!$response) {
+            throw new MultiTesterException(
+                "Fetching $url " . (getenv('GITHUB_TOKEN') ? 'with' : 'without') . " GITHUB_TOKEN failed.\n"
+            );
+        }
+
+        return json_decode($response, true);
     }
 
     private function isSuccessful(string $sha): bool

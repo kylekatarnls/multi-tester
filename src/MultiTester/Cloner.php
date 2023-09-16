@@ -26,14 +26,32 @@ final class Cloner
         $successOnly = $settings['source']['success_only'] ?? false;
 
         if ($reference || $successOnly) {
-            if ($successOnly ?? false) {
-                $reference = $this->getFirstSuccessfulCommit($url, $reference);
-            }
-
-            $commands[] = 'git checkout --detach ' . $reference . ($this->config->quiet ? ' --quiet' : '');
+            $commands[] = 'git checkout --detach ' .
+                $this->getReference($successOnly, $url, $reference) .
+                ($this->config->quiet ? ' --quiet' : '');
         }
 
         return $commands;
+    }
+
+    /**
+     * @throws MultiTesterException
+     */
+    private function getReference(bool $successOnly, ?string $url, ?string $reference): string
+    {
+        if ($successOnly) {
+            $this->getConfig()->getTester()->info(
+                "Search for last successful commit from '$url' with '$reference'.\n"
+            );
+
+            return $this->getFirstSuccessfulCommit($url, $reference);
+        }
+
+        $this->getConfig()->getTester()->info(
+            "Using reference '$reference'.\n"
+        );
+
+        return $reference ?? '';
     }
 
     /**
