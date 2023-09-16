@@ -8,15 +8,19 @@ use ArrayAccess;
 use Composer\Semver\Semver;
 use MultiTester\Traits\Composer;
 use MultiTester\Traits\ConfigHandler;
+use MultiTester\Traits\GithubShortcut;
 use MultiTester\Traits\PackageNameHandler;
 use MultiTester\Traits\Settings;
+use MultiTester\Traits\TravisShortcut;
 
 class Project
 {
     use ConfigHandler;
     use Composer;
+    use GithubShortcut;
     use PackageNameHandler;
     use Settings;
+    use TravisShortcut;
 
     public function __construct(string $package, Config $config, $settings = null)
     {
@@ -129,6 +133,17 @@ class Project
             $settings['source'] = $composerSettings[$version]['source']
                 ?? $this->getRepositoryUrl($composerSettings);
         }
+
+        if (
+            isset($settings['source']['url']) &&
+            !isset($settings['source']['type']) &&
+            (
+                preg_match('/\.git$/', $settings['source']['url']) ||
+                preg_match('`^(https?://github\.com/|git[@:])`', $settings['source']['url'])
+            )
+        ) {
+            $settings['source']['type'] = 'git';
+        }
     }
 
     /** @param ArrayAccess|array|null $composerSettings */
@@ -190,20 +205,8 @@ class Project
         }
 
         $this->replaceTravisSetting($settings, $key, $name);
+        $this->replaceGitHubSetting($settings, $key, $name);
         $this->asArray($settings[$key]);
-    }
-
-    protected function replaceTravisSetting(array &$settings, string $key, string $name): void
-    {
-        if ($settings[$key] === 'travis') {
-            $tester = $this->getConfig()->getTester();
-            $travisSettings = $tester->getTravisSettings();
-
-            if (isset($travisSettings[$key])) {
-                $tester->output(ucfirst($name) . ' found in ' . $tester->getTravisFile() . ", add a '$key' entry if you want to customize it.\n");
-                $settings[$key] = $travisSettings[$key];
-            }
-        }
     }
 
     protected function seedAutoloadSetting(array &$settings): void
@@ -279,6 +282,7 @@ class Project
         }
 
         $tester->clearTravisSettingsCache();
+        $tester->clearGithubSettingsCache();
 
         $this->seedInstallSetting($settings);
 

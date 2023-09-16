@@ -142,9 +142,24 @@ final class Arguments
     private static function getFlag(string $argument, array $allowedFlags): ?string
     {
         foreach ($allowedFlags as $allowedFlag => $aliases) {
-            if ($argument === $allowedFlag || in_array($argument, (array) $aliases, true)) {
-                return $allowedFlag;
+            $matchingFlag = self::checkFlagMatch($argument, $allowedFlag, $aliases);
+
+            if ($matchingFlag !== null) {
+                return $matchingFlag;
             }
+        }
+
+        return null;
+    }
+
+    private static function checkFlagMatch(string $argument, $allowedFlag, $aliases): ?string
+    {
+        if (is_int($allowedFlag)) {
+            return $argument === $aliases ? $argument : null;
+        }
+
+        if ($argument === $allowedFlag || in_array($argument, (array) $aliases, true)) {
+            return $allowedFlag;
         }
 
         return null;

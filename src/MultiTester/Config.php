@@ -54,6 +54,11 @@ class Config
     /**
      * @var bool
      */
+    public $colored;
+
+    /**
+     * @var bool
+     */
     public $verbose;
 
     /**
@@ -87,12 +92,19 @@ class Config
             [
                 '--verbose'       => '-v',
                 '--quiet-install' => '-q',
+                '--no-colors',
+                '--colors',
             ],
             ['--add']
         );
         $this->adds = (array) ($parsedArguments->getOption('--add') ?? []);
         $this->tester = $multiTester;
         $this->verbose = $parsedArguments->hasFlag('--verbose');
+        $this->colored = !$parsedArguments->hasFlag('--no-colors') &&
+            (
+                $parsedArguments->hasFlag('--colors') ||
+                $this->checkColorSupport()
+            );
         $this->quiet = $parsedArguments->hasFlag('--quiet-install');
         $arguments = $parsedArguments->getArguments(1);
 
@@ -171,5 +183,22 @@ class Config
             ? rtrim($base, '/\\') . DIRECTORY_SEPARATOR . ltrim($this->config['directory'], '/\\')
             : $base;
         $this->composerFile = $this->projectDirectory . '/composer.json';
+    }
+
+    /**
+     * @codeCoverageIgnore
+     */
+    private function checkColorSupport(): bool
+    {
+        return ((int) getenv('GITHUB_RUN_ID')) > 0 ||
+            (
+                DIRECTORY_SEPARATOR === '\\'
+                ? false !== getenv('ANSICON') ||
+                'ON' === getenv('ConEmuANSI') ||
+                false !== getenv('BABUN_HOME')
+                : (false !== getenv('BABUN_HOME')) ||
+                function_exists('posix_isatty') &&
+                @posix_isatty(STDOUT)
+            );
     }
 }
