@@ -10,6 +10,9 @@ final class SourceFinder
 {
     use ErrorHandler;
 
+    /** @var string|null */
+    private $lastPlatform;
+
     public function __construct($workingDirectory)
     {
         $this->setWorkingDirectory($workingDirectory);
@@ -18,6 +21,7 @@ final class SourceFinder
     public function getFromFirstValidPlatform($package, $platforms): ?array
     {
         foreach ($this->parsePlatformList($platforms) as $platform) {
+            $this->lastPlatform = $platform;
             $result = $this->getSourceFromPlatform($package, $platform);
 
             if ($result !== null) {
@@ -26,6 +30,11 @@ final class SourceFinder
         }
 
         return null;
+    }
+
+    public function getLastPlatformTried(): ?string
+    {
+        return $this->lastPlatform;
     }
 
     private function getSourceFromLibrariesIo($package): ?array
