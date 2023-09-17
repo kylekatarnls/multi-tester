@@ -130,9 +130,9 @@ class Project
             $version = is_array($composerSettings)
                 ? $this->filterVersion($settings['version'], array_keys((array) ($composerSettings ?: [])))
                 : '';
+            $versionSettings = $composerSettings[$version] ?? [];
 
-            $settings['source'] = $composerSettings[$version]['source']
-                ?? $this->getRepositoryUrl($composerSettings);
+            $settings['source'] = $versionSettings['source'] ?? $this->getRepositoryUrl($versionSettings);
             $sourceDump = json_encode($settings['source'], JSON_PRETTY_PRINT);
 
             $tester->info("Found source for version '$version':\n$sourceDump\n");

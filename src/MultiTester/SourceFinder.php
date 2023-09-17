@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MultiTester;
 
+use Composer\MetadataMinifier\MetadataMinifier;
 use MultiTester\Traits\ErrorHandler;
 
 final class SourceFinder
@@ -41,7 +42,7 @@ final class SourceFinder
     {
         $file = new File('https://libraries.io/api/Packagist/' . urlencode($package), 'json');
 
-        return $file->isValid() ? $file->toArray() : null;
+        return $file->isValid() ? $this->groupByVersion($file->toArray()) : null;
     }
 
     private function getSourceFromPackagist($package, $namespace = 'p2'): ?array
@@ -55,19 +56,30 @@ final class SourceFinder
 
     private function getSourceFromPackagist2($package): ?array
     {
-        $list = $this->getSourceFromPackagist($package);
+        return $this->groupByVersion($this->getSourceFromPackagist($package));
+    }
 
+    private function groupByVersion($list): ?array
+    {
         if (!is_array($list)) {
             return $list;
         }
 
         $listByVersion = [];
-        $previousItem = [];
+
+        if (isset($list['versions'])) {
+            $item = $list;
+            $list = $list['versions'];
+            unset($item['versions']);
+            array_unshift($list, $item);
+            $list = MetadataMinifier::expand($list);
+        }
 
         foreach ($list as $item) {
-            if (isset($item['version'])) {
-                $previousItem = array_merge($previousItem, $item);
-                $listByVersion[$item['version']] = $previousItem;
+            $version = $item['version'] ?? $item['number'] ?? null;
+
+            if ($version !== null) {
+                $listByVersion[$version] = $item;
             }
         }
 
