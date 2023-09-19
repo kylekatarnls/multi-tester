@@ -72,10 +72,9 @@ final class SourceFinder
             $list = $list['versions'];
             unset($item['versions']);
             array_unshift($list, $item);
-            $list = MetadataMinifier::expand($list);
         }
 
-        foreach ($list as $item) {
+        foreach ($this->expandList($list) as $item) {
             $version = $item['version'] ?? $item['number'] ?? null;
 
             if ($version !== null) {
@@ -84,6 +83,21 @@ final class SourceFinder
         }
 
         return $listByVersion;
+    }
+
+    private function expandList($list)
+    {
+        if (!is_array($list)) {
+            return $list;
+        }
+
+        foreach ($list as $key => $value) {
+            if (!is_int($key) || !is_array($value)) {
+                return $list;
+            }
+        }
+
+        return MetadataMinifier::expand($list);
     }
 
     private function getSourceFromPlatform($package, $platform): ?array

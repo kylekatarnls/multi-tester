@@ -7,6 +7,7 @@ use MultiTester\Directory;
 use MultiTester\MultiTester;
 use MultiTester\MultiTesterException;
 use MultiTester\Project;
+use MultiTester\SourceFinder;
 use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
 
@@ -265,6 +266,13 @@ class MultiTesterTest extends TestCase
 
         $package = $method->invoke($tester, 'pug/pug', 'packagist1, libraries.io');
 
+        $this->assertIsArray($package);
+
+        $this->assertSame('pug/pug', $package['0.2.0']['name'] ?? null);
+        $this->assertSame('Pug PHP 3 adapter from the shinny new Phug into pug-php', $package['0.2.0']['description'] ?? null);
+        $this->assertSame('https://github.com/kylekatarnls/pug3', $package['0.2.0']['repository_url'] ?? null);
+        $this->assertSame('2017-10-10T19:07:02.000Z', $package['0.2.0']['published_at'] ?? null);
+
         $cwd = @getcwd() ?: '.';
         chdir(__DIR__ . '/project');
 
@@ -272,13 +280,64 @@ class MultiTesterTest extends TestCase
         $method = new ReflectionMethod($tester, 'getRepositoryUrl');
         $method->setAccessible(true);
 
-        $source = $method->invoke($tester, $package);
+        $source = $method->invoke($tester, $package['0.2.0']);
         chdir($cwd);
 
         $this->assertSame([
             'type' => 'git',
             'url'  => 'https://github.com/kylekatarnls/pug3',
         ], $source);
+    }
+
+    /**
+     * @throws \ReflectionException
+     */
+    public function testExpandList(): void
+    {
+        $tester = new SourceFinder('.');
+        $method = new ReflectionMethod($tester, 'expandList');
+        $method->setAccessible(true);
+
+        $this->assertNull($method->invoke($tester, null));
+        $this->assertSame([], $method->invoke($tester, []));
+        $this->assertSame(['a', 'b'], $method->invoke($tester, ['a', 'b']));
+        $this->assertSame([
+            [
+                'a' => 'b',
+            ],
+            [
+                'a' => 'b',
+                'b' => 'c',
+            ],
+            [
+                'a' => 'b',
+                'b' => 'c',
+                'c' => 'd',
+            ],
+            [
+                'a' => 'b',
+                'b' => 'c',
+                'c' => 'e',
+            ],
+            [
+                'a' => 'b',
+                'b' => 'c',
+                'c' => 'e',
+                'd' => 'f',
+            ],
+            [
+                'a' => 'b',
+                'c' => 'e',
+                'd' => 'f',
+            ],
+        ], $method->invoke($tester, [
+            ['a' => 'b'],
+            ['b' => 'c'],
+            ['c' => 'd'],
+            ['c' => 'e'],
+            ['d' => 'f'],
+            ['b' => '__unset'],
+        ]));
     }
 
     /**
