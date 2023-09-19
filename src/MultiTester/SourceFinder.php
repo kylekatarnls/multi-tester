@@ -42,7 +42,7 @@ final class SourceFinder
     {
         $file = new File('https://libraries.io/api/Packagist/' . urlencode($package), 'json');
 
-        return $file->isValid() ? $this->groupByVersion($package, $file->toArray()) : null;
+        return $file->isValid() ? $this->groupByVersion($file->toArray()) : null;
     }
 
     private function getSourceFromPackagist($package, $namespace = 'p2'): ?array
@@ -56,10 +56,10 @@ final class SourceFinder
 
     private function getSourceFromPackagist2($package): ?array
     {
-        return $this->groupByVersion($package, $this->getSourceFromPackagist($package));
+        return $this->groupByVersion($this->getSourceFromPackagist($package));
     }
 
-    private function groupByVersion($package, $list): ?array
+    private function groupByVersion($list): ?array
     {
         if (!is_array($list)) {
             return $list;
