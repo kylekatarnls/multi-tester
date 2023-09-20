@@ -2,7 +2,10 @@
 
 namespace MultiTester\Tests;
 
+use MultiTester\Cloner;
+use MultiTester\Config;
 use MultiTester\GitHub;
+use MultiTester\MultiTester;
 use MultiTester\MultiTesterException;
 use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
@@ -267,5 +270,30 @@ class GitHubTest extends TestCase
         });
 
         $gitHub->getFirstSuccessfulCommit('master');
+    }
+
+    /**
+     * @throws MultiTesterException
+     */
+    public function testClone(): void
+    {
+        $cloner = new Cloner(new Config(new MultiTester(), [null, __DIR__ . '/project/.multi-tester.yml']));
+
+        $commands = $cloner->getCloneCommands([
+            'source' => [
+                'success_only' => true,
+                'url' => 'https://github.com/BKWLD/laravel-pug.git',
+                'reference' => 'multi-tester-labels',
+            ],
+            'install' => 'github',
+            'script' => 'github',
+        ]);
+
+        $this->assertSame([
+            'git clone https://github.com/BKWLD/laravel-pug.git .',
+            'git checkout --detach [commit-hash]',
+        ], array_map(static function (string $command): string {
+            return preg_replace('/[0-9a-f]{40}/', '[commit-hash]', $command);
+        }, $commands));
     }
 }
