@@ -3,7 +3,6 @@
 namespace MultiTester\Tests;
 
 use MultiTester\Directory;
-use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
 
 class DirectoryTest extends TestCase
@@ -16,17 +15,17 @@ class DirectoryTest extends TestCase
         $this->assertTrue((new Directory(__DIR__ . '/dependency/vendor'))->copy("$testDirectory/dest", ['bin']));
 
         $this->assertFileExists("$testDirectory/dest/my-org/my-project/readme.md");
-        $this->assertFileNotExists("$testDirectory/dest/bin/program");
+        $this->assertFileDoesNotExist("$testDirectory/dest/bin/program");
 
         $this->assertTrue((new Directory("$testDirectory/dest"))->clean());
 
-        $this->assertFileNotExists("$testDirectory/dest/my-org/my-project/readme.md");
+        $this->assertFileDoesNotExist("$testDirectory/dest/my-org/my-project/readme.md");
         $this->assertFileExists("$testDirectory/dest");
 
         $this->assertTrue((new Directory("$testDirectory/dest"))->remove());
 
-        $this->assertFileNotExists("$testDirectory/dest/my-org/my-project/readme.md");
-        $this->assertFileNotExists("$testDirectory/dest");
+        $this->assertFileDoesNotExist("$testDirectory/dest/my-org/my-project/readme.md");
+        $this->assertFileDoesNotExist("$testDirectory/dest");
 
         $this->assertTrue((new Directory("$testDirectory/dest/foo"))->create());
 
@@ -43,7 +42,7 @@ class DirectoryTest extends TestCase
 
         $this->assertTrue((new Directory("$testDirectory/dest/foo"))->create());
 
-        $this->assertFileNotExists("$testDirectory/dest/foo/bar");
+        $this->assertFileDoesNotExist("$testDirectory/dest/foo/bar");
 
         touch("$testDirectory/dest/foo/bar");
 
@@ -57,7 +56,7 @@ class DirectoryTest extends TestCase
 
         $this->assertTrue((new Directory("$testDirectory/dest"))->remove());
 
-        $this->assertFileNotExists("$testDirectory/dest");
+        $this->assertFileDoesNotExist("$testDirectory/dest");
 
         mkdir("$testDirectory/dest/foo/bar/biz", 0777, true);
         touch("$testDirectory/dest/foo/bar/biz/bla");
@@ -68,7 +67,7 @@ class DirectoryTest extends TestCase
 
         $this->assertTrue((new Directory($testDirectory))->remove());
 
-        $this->assertFileNotExists($testDirectory);
+        $this->assertFileDoesNotExist($testDirectory);
     }
 
     public function testCopyItem(): void
@@ -88,7 +87,7 @@ class DirectoryTest extends TestCase
 
         $this->assertTrue((new Directory($testDirectory))->remove());
 
-        $this->assertFileNotExists($testDirectory);
+        $this->assertFileDoesNotExist($testDirectory);
     }
 
     public function testCleanItem(): void
@@ -108,6 +107,6 @@ class DirectoryTest extends TestCase
 
         $this->assertTrue((new Directory($testDirectory))->remove());
 
-        $this->assertFileNotExists($testDirectory);
+        $this->assertFileDoesNotExist($testDirectory);
     }
 }

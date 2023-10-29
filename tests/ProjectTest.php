@@ -8,7 +8,6 @@ use MultiTester\MultiTester;
 use MultiTester\MultiTesterException;
 use MultiTester\Project;
 use MultiTester\TestFailedException;
-use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
 
 class ProjectTest extends TestCase
@@ -609,7 +608,7 @@ class ProjectTest extends TestCase
         $this->assertIsArray($clone);
         $this->assertCount(2, $clone);
         $this->assertSame('git clone https://github.com/pug-php/pug.git .', $clone[0]);
-        $this->assertRegExp('/^git checkout --detach [0-9a-f]+$/', $clone[1]);
+        $this->assertMatchesRegularExpression('/^git checkout --detach [0-9a-f]+$/', $clone[1]);
     }
 
     /**

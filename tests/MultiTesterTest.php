@@ -8,7 +8,6 @@ use MultiTester\MultiTester;
 use MultiTester\MultiTesterException;
 use MultiTester\Project;
 use MultiTester\SourceFinder;
-use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
 
 class MultiTesterTest extends TestCase
@@ -120,7 +119,7 @@ class MultiTesterTest extends TestCase
             $message = $exception->getMessage();
         }
 
-        $this->assertRegExp('/Multi-tester config file \'[^\']+\/project\/not-found\/\.multi-tester\.yml\' not found./', $message);
+        $this->assertMatchesRegularExpression('/Multi-tester config file \'[^\']+\/project\/not-found\/\.multi-tester\.yml\' not found./', $message);
     }
 
     /**

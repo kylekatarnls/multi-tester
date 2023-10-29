@@ -283,7 +283,7 @@ class GitHubTest extends TestCase
             'source' => [
                 'success_only' => true,
                 'url'          => 'https://github.com/BKWLD/laravel-pug.git',
-                'reference'    => 'multi-tester-labels',
+                'reference'    => 'master',
             ],
             'install' => 'github',
             'script'  => 'github',
