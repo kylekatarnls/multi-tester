@@ -282,11 +282,11 @@ class GitHubTest extends TestCase
         $commands = $cloner->getCloneCommands([
             'source' => [
                 'success_only' => true,
-                'url' => 'https://github.com/BKWLD/laravel-pug.git',
-                'reference' => 'multi-tester-labels',
+                'url'          => 'https://github.com/BKWLD/laravel-pug.git',
+                'reference'    => 'multi-tester-labels',
             ],
             'install' => 'github',
-            'script' => 'github',
+            'script'  => 'github',
         ]);
 
         $this->assertSame([
