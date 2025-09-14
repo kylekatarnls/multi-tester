@@ -3,7 +3,6 @@
 namespace MultiTester\Tests;
 
 use MultiTester\Summary;
-use PHPUnit\Framework\TestCase;
 
 class SummaryTest extends TestCase
 {

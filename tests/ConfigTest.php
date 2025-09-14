@@ -6,7 +6,6 @@ use MultiTester\Config;
 use MultiTester\Directory;
 use MultiTester\MultiTester;
 use MultiTester\MultiTesterException;
-use PHPUnit\Framework\TestCase;
 
 class ConfigTest extends TestCase
 {

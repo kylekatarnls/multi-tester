@@ -3,7 +3,6 @@
 namespace MultiTester\Tests;
 
 use MultiTester\File;
-use PHPUnit\Framework\TestCase;
 
 class FileTest extends TestCase
 {

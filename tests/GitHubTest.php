@@ -7,7 +7,6 @@ use MultiTester\Config;
 use MultiTester\GitHub;
 use MultiTester\MultiTester;
 use MultiTester\MultiTesterException;
-use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
 
 class GitHubTest extends TestCase

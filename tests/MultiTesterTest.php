@@ -178,8 +178,8 @@ class MultiTesterTest extends TestCase
 
         $removeDirectories->invoke($tester, $directories);
 
-        $this->assertFileNotExists($directories[0]);
-        $this->assertFileNotExists($directories[1]);
+        $this->assertFileDoesNotExist($directories[0]);
+        $this->assertFileDoesNotExist($directories[1]);
     }
 
     /**
@@ -247,9 +247,12 @@ class MultiTesterTest extends TestCase
 
         $this->assertIsArray($package);
         $this->assertArrayHasKey('name', $package);
-        $this->assertArrayHasKey('version', $package);
         $this->assertSame('pug-php/pug', $package['name']);
-        $this->assertSame('3.2.0', $package['version']);
+        $this->assertSame('3.2.0', $package['version'] ?? $package['number']);
+        $this->assertSame(
+            strtotime('2018-06-10T17:27:29.000Z'),
+            strtotime($package['time'] ?? $package['published_at'])
+        );
 
         $this->assertNull($method->invoke($tester, 'pug-php/i-will-never-exist'));
     }
@@ -458,7 +461,7 @@ class MultiTesterTest extends TestCase
             $message = $exception->getMessage();
         }
 
-        $this->assertFileNotExists($directory);
+        $this->assertFileDoesNotExist($directory);
         $this->assertSame('Fail', $message);
 
         mkdir($directory, 0777, true);
@@ -470,7 +473,7 @@ class MultiTesterTest extends TestCase
             $message = $exception->getMessage();
         }
 
-        $this->assertFileNotExists($directory);
+        $this->assertFileDoesNotExist($directory);
         $this->assertSame('Failure', $message);
     }
 
