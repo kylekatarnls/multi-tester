@@ -1,8 +1,9 @@
 <?php
 
+namespace MultiTester\Tests;
+
 use MultiTester\Arguments;
 use MultiTester\MultiTesterException;
-use PHPUnit\Framework\TestCase;
 
 class ArgumentsTest extends TestCase
 {

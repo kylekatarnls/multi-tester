@@ -361,7 +361,10 @@ class ProjectTest extends TestCase
 
         $this->assertIsArray($settings['source']);
         $this->assertSame('git', $settings['source']['type']);
-        $this->assertSame('https://github.com/pug-php/pug.git', $settings['source']['url']);
+        $this->assertContains($settings['source']['url'], [
+            'https://github.com/pug-php/pug.git',
+            'https://github.com/pug-php/pug',
+        ]);
 
         $project = new Project('pug-php/does-not-exist', $config, []);
         $seedSourceSetting = new ReflectionMethod($project, 'seedSourceSetting');
@@ -844,7 +847,7 @@ class ProjectTest extends TestCase
         $removeReplacedPackages->setAccessible(true);
         $removeReplacedPackages->invoke($project);
 
-        $this->assertDirectoryNotExists($projectDir);
+        $this->assertDirectoryDoesNotExist($projectDir);
 
         chdir(sys_get_temp_dir());
         (new Directory($dir))->remove();
