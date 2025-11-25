@@ -77,7 +77,9 @@ class DirectoryTest extends TestCase
 
         $directory = new Directory($testDirectory);
         $copyItem = new ReflectionMethod($directory, 'copyItem');
-        $copyItem->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $copyItem->setAccessible(true);
+        }
 
         $success = true;
 
@@ -97,7 +99,9 @@ class DirectoryTest extends TestCase
 
         $directory = new Directory($testDirectory);
         $cleanItem = new ReflectionMethod($directory, 'cleanItem');
-        $cleanItem->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $cleanItem->setAccessible(true);
+        }
 
         $success = true;
 

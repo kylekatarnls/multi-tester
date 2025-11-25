@@ -23,7 +23,9 @@ class GitHubTest extends TestCase
             return '[]';
         });
         $getCurl = new ReflectionMethod($gitHub, 'getCurl');
-        $getCurl->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $getCurl->setAccessible(true);
+        }
         $getCurl->invoke($gitHub, '/foobar');
 
         $this->assertSame([
@@ -40,7 +42,9 @@ class GitHubTest extends TestCase
             return '{"foo": "bar"}';
         });
         $getJSON = new ReflectionMethod($gitHub, 'getJSON');
-        $getJSON->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $getJSON->setAccessible(true);
+        }
 
         $this->assertSame([
             'foo' => 'bar',
@@ -86,7 +90,9 @@ class GitHubTest extends TestCase
             return json_encode($data);
         });
         $isSuccessful = new ReflectionMethod($gitHub, 'isSuccessful');
-        $isSuccessful->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $isSuccessful->setAccessible(true);
+        }
 
         $this->assertTrue($isSuccessful->invoke($gitHub, 'a12'));
         $this->assertFalse($isSuccessful->invoke($gitHub, 'b34'));

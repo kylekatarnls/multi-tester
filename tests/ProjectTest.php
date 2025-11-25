@@ -90,7 +90,9 @@ class ProjectTest extends TestCase
         $project = new Project('foo/bar', $config, null);
 
         $getScript = new ReflectionMethod($project, 'getScript');
-        $getScript->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $getScript->setAccessible(true);
+        }
 
         $this->assertSame(['foobar'], $getScript->invoke($project, 'foobar'));
 
@@ -112,7 +114,9 @@ class ProjectTest extends TestCase
         $project = new Project('foo/bar', $config, null);
 
         $getTries = new ReflectionMethod($project, 'getTries');
-        $getTries->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $getTries->setAccessible(true);
+        }
 
         $this->assertSame(5, $getTries->invoke($project, [], 5));
         $this->assertSame(3, $getTries->invoke($project, [
@@ -312,7 +316,9 @@ class ProjectTest extends TestCase
         $config = new Config($tester, [__DIR__ . '/../bin/multi-tester']);
         $project = new Project('foo/bar', $config, []);
         $filterVersion = new ReflectionMethod($project, 'filterVersion');
-        $filterVersion->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $filterVersion->setAccessible(true);
+        }
 
         $this->assertSame(
             '2.10.9',
@@ -347,7 +353,9 @@ class ProjectTest extends TestCase
         $config = new Config($tester, [__DIR__ . '/../bin/multi-tester']);
         $project = new Project('pug-php/pug', $config, []);
         $seedSourceSetting = new ReflectionMethod($project, 'seedSourceSetting');
-        $seedSourceSetting->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $seedSourceSetting->setAccessible(true);
+        }
 
         $settings = [
             'source' => 'foobar',
@@ -368,7 +376,9 @@ class ProjectTest extends TestCase
 
         $project = new Project('pug-php/does-not-exist', $config, []);
         $seedSourceSetting = new ReflectionMethod($project, 'seedSourceSetting');
-        $seedSourceSetting->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $seedSourceSetting->setAccessible(true);
+        }
 
         $settings = [
             'source' => 'foobar',
@@ -401,7 +411,9 @@ class ProjectTest extends TestCase
         $config = new Config($tester, [__DIR__ . '/../bin/multi-tester']);
         $project = new Project('pug-php/pug', $config, []);
         $checkSourceSetting = new ReflectionMethod($project, 'checkSourceSetting');
-        $checkSourceSetting->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $checkSourceSetting->setAccessible(true);
+        }
 
         $this->assertNull($checkSourceSetting->invoke($project, [
             'source' => [
@@ -467,7 +479,9 @@ class ProjectTest extends TestCase
         };
         $project = new Project('pug-php/pug', $config, []);
         $seedCloneSetting = new ReflectionMethod($project, 'seedCloneSetting');
-        $seedCloneSetting->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $seedCloneSetting->setAccessible(true);
+        }
 
         $settings = [
             'source' => [
@@ -500,7 +514,9 @@ class ProjectTest extends TestCase
         $config = new Config($tester, [__DIR__ . '/../bin/multi-tester']);
         $project = new Project('pug-php/pug', $config, []);
         $checkSourceSetting = new ReflectionMethod($project, 'checkSourceSetting');
-        $checkSourceSetting->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $checkSourceSetting->setAccessible(true);
+        }
 
         $checkSourceSetting->invoke($project, []);
     }
@@ -520,7 +536,9 @@ class ProjectTest extends TestCase
         $config = new Config($tester, [__DIR__ . '/../bin/multi-tester']);
         $project = new Project('pug-php/pug', $config, []);
         $checkSourceSetting = new ReflectionMethod($project, 'checkSourceSetting');
-        $checkSourceSetting->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $checkSourceSetting->setAccessible(true);
+        }
 
         $checkSourceSetting->invoke($project, [
             'source' => [
@@ -545,7 +563,9 @@ class ProjectTest extends TestCase
         $config = new Config($tester, [__DIR__ . '/../bin/multi-tester']);
         $project = new Project('pug-php/pug', $config, []);
         $checkSourceSetting = new ReflectionMethod($project, 'checkSourceSetting');
-        $checkSourceSetting->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $checkSourceSetting->setAccessible(true);
+        }
 
         $checkSourceSetting->invoke($project, [
             'source' => [
@@ -569,7 +589,9 @@ class ProjectTest extends TestCase
         $config = new Config($tester, [__DIR__ . '/../bin/multi-tester']);
         $project = new Project('foo/bar', $config, []);
         $seedCloneSetting = new ReflectionMethod($project, 'seedCloneSetting');
-        $seedCloneSetting->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $seedCloneSetting->setAccessible(true);
+        }
 
         $settings = [
             'source' => [
@@ -594,7 +616,9 @@ class ProjectTest extends TestCase
         $config = new Config($tester, [__DIR__ . '/../bin/multi-tester']);
         $project = new Project('pug-php/pug', $config, []);
         $seedCloneSetting = new ReflectionMethod($project, 'seedCloneSetting');
-        $seedCloneSetting->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $seedCloneSetting->setAccessible(true);
+        }
 
         $settings = [
             'clone' => 'foobar',
@@ -632,7 +656,9 @@ class ProjectTest extends TestCase
         $config = new Config($tester, [__DIR__ . '/../bin/multi-tester']);
         $project = new Project('pug-php/pug', $config, []);
         $seedInstallSetting = new ReflectionMethod($project, 'seedInstallSetting');
-        $seedInstallSetting->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $seedInstallSetting->setAccessible(true);
+        }
 
         $settings = [
             'install' => 'foobar',
@@ -679,7 +705,9 @@ class ProjectTest extends TestCase
 
         $project = new Project('nesbot/carbon', $config, []);
         $seedInstallSetting = new ReflectionMethod($project, 'seedInstallSetting');
-        $seedInstallSetting->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $seedInstallSetting->setAccessible(true);
+        }
 
         $settings = [
             'install' => 'travis',
@@ -769,7 +797,9 @@ class ProjectTest extends TestCase
         $config = new Config($tester, [__DIR__ . '/../bin/multi-tester']);
         $project = new Project('pug-php/pug', $config, []);
         $seedScriptSetting = new ReflectionMethod($project, 'seedScriptSetting');
-        $seedScriptSetting->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $seedScriptSetting->setAccessible(true);
+        }
 
         $settings = [
             'script' => 'foobar',
@@ -796,7 +826,9 @@ class ProjectTest extends TestCase
 
         $project = new Project('nesbot/carbon', $config, []);
         $seedScriptSetting = new ReflectionMethod($project, 'seedScriptSetting');
-        $seedScriptSetting->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $seedScriptSetting->setAccessible(true);
+        }
 
         $settings = [
             'script' => 'travis',
@@ -844,7 +876,9 @@ class ProjectTest extends TestCase
         $this->assertDirectoryExists($projectDir);
 
         $removeReplacedPackages = new ReflectionMethod($project, 'removeReplacedPackages');
-        $removeReplacedPackages->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $removeReplacedPackages->setAccessible(true);
+        }
         $removeReplacedPackages->invoke($project);
 
         $this->assertDirectoryDoesNotExist($projectDir);
@@ -865,7 +899,9 @@ class ProjectTest extends TestCase
         $project = new Project('pug-php/pug', $config, []);
 
         $removeReplacedPackages = new ReflectionMethod($project, 'removeReplacedPackages');
-        $removeReplacedPackages->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $removeReplacedPackages->setAccessible(true);
+        }
 
         $this->assertNull($removeReplacedPackages->invoke($project));
     }
