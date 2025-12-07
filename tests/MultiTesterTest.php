@@ -57,10 +57,14 @@ class MultiTesterTest extends TestCase
     {
         $tester = new MultiTester();
         $method = new ReflectionMethod($tester, 'getTravisSettings');
-        $method->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $method->setAccessible(true);
+        }
 
         $clearMethod = new ReflectionMethod($tester, 'clearTravisSettingsCache');
-        $clearMethod->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $clearMethod->setAccessible(true);
+        }
 
         $tester->setTravisFile(__DIR__ . '/dependency/.i-do-not-exist.yml');
 
@@ -103,7 +107,9 @@ class MultiTesterTest extends TestCase
         $tester = new MultiTester();
 
         $getConfig = new ReflectionMethod($tester, 'getConfig');
-        $getConfig->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $getConfig->setAccessible(true);
+        }
 
         /** @var Config $config */
         $config = $getConfig->invoke($tester, ['foo', __DIR__ . '/project/.multi-tester.yml']);
@@ -130,7 +136,9 @@ class MultiTesterTest extends TestCase
         $tester = new MultiTester();
 
         $extractVersion = new ReflectionMethod($tester, 'extractVersion');
-        $extractVersion->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $extractVersion->setAccessible(true);
+        }
 
         $package = 'foo/bar';
         $settings = [];
@@ -165,7 +173,9 @@ class MultiTesterTest extends TestCase
         $tester = new MultiTester();
 
         $removeDirectories = new ReflectionMethod($tester, 'removeDirectories');
-        $removeDirectories->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $removeDirectories->setAccessible(true);
+        }
 
         $directories = [
             sys_get_temp_dir() . '/test-' . mt_rand(0, 999999),
@@ -189,10 +199,14 @@ class MultiTesterTest extends TestCase
     {
         $tester = new MultiTester();
         $method = new ReflectionMethod($tester, 'getTravisSettings');
-        $method->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $method->setAccessible(true);
+        }
 
         $prepareWorkingDirectory = new ReflectionMethod($tester, 'prepareWorkingDirectory');
-        $prepareWorkingDirectory->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $prepareWorkingDirectory->setAccessible(true);
+        }
 
         $directories = [];
 
@@ -212,10 +226,14 @@ class MultiTesterTest extends TestCase
         touch($file);
         $tester = new MultiTester($file);
         $method = new ReflectionMethod($tester, 'getTravisSettings');
-        $method->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $method->setAccessible(true);
+        }
 
         $prepareWorkingDirectory = new ReflectionMethod($tester, 'prepareWorkingDirectory');
-        $prepareWorkingDirectory->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $prepareWorkingDirectory->setAccessible(true);
+        }
         $message = null;
 
         try {
@@ -236,7 +254,9 @@ class MultiTesterTest extends TestCase
     {
         $tester = new MultiTester();
         $method = new ReflectionMethod($tester, 'getComposerSettings');
-        $method->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $method->setAccessible(true);
+        }
 
         $packages = $method->invoke($tester, 'pug-php/pug');
 
@@ -264,7 +284,9 @@ class MultiTesterTest extends TestCase
     {
         $tester = new MultiTester();
         $method = new ReflectionMethod($tester, 'getComposerSettings');
-        $method->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $method->setAccessible(true);
+        }
 
         $package = $method->invoke($tester, 'pug/pug', 'packagist1, libraries.io');
 
@@ -280,7 +302,9 @@ class MultiTesterTest extends TestCase
 
         $tester = new Project('pug/pug', new Config($tester, [__DIR__ . '/../bin/multi-tester']), null);
         $method = new ReflectionMethod($tester, 'getRepositoryUrl');
-        $method->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $method->setAccessible(true);
+        }
 
         $source = $method->invoke($tester, $package['0.2.0']);
         chdir($cwd);
@@ -298,7 +322,9 @@ class MultiTesterTest extends TestCase
     {
         $tester = new SourceFinder('.');
         $method = new ReflectionMethod($tester, 'expandList');
-        $method->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $method->setAccessible(true);
+        }
 
         $this->assertNull($method->invoke($tester, null));
         $this->assertSame([], $method->invoke($tester, []));
@@ -352,7 +378,9 @@ class MultiTesterTest extends TestCase
 
         $tester = new MultiTester();
         $method = new ReflectionMethod($tester, 'getComposerSettings');
-        $method->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $method->setAccessible(true);
+        }
 
         $method->invoke($tester, 'pug/pug', 'packagist1, foobar');
     }
@@ -364,7 +392,9 @@ class MultiTesterTest extends TestCase
     {
         $tester = new MultiTester();
         $output = new ReflectionMethod($tester, 'output');
-        $output->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $output->setAccessible(true);
+        }
 
         $tester->setProcStreams([]);
         ob_start();
@@ -382,7 +412,9 @@ class MultiTesterTest extends TestCase
     {
         $tester = new MultiTester();
         $info = new ReflectionMethod($tester, 'info');
-        $info->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $info->setAccessible(true);
+        }
 
         $this->assertFalse($tester->isVerbose());
 
@@ -414,7 +446,9 @@ class MultiTesterTest extends TestCase
     {
         $tester = new MultiTester();
         $exec = new ReflectionMethod($tester, 'exec');
-        $exec->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $exec->setAccessible(true);
+        }
 
         $streams = $tester->getProcStreams();
         $buffer = sys_get_temp_dir() . '/test-' . mt_rand(0, 99999);
@@ -448,7 +482,9 @@ class MultiTesterTest extends TestCase
     {
         $tester = new MultiTester();
         $error = new ReflectionMethod($tester, 'error');
-        $error->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $error->setAccessible(true);
+        }
 
         $directory = sys_get_temp_dir() . '/test-' . mt_rand(0, 99999);
         mkdir($directory, 0777, true);
@@ -492,7 +528,9 @@ class MultiTesterTest extends TestCase
         $tester->setWorkingDirectory($directory);
 
         $testProject = new ReflectionMethod($tester, 'testProject');
-        $testProject->setAccessible(true);
+        if (PHP_VERSION_ID < 80100) {
+            $testProject->setAccessible(true);
+        }
         $buffer = sys_get_temp_dir() . '/test-' . mt_rand(0, 99999);
         $tester->setProcStreams([
             ['file', 'php://stdin', 'r'],
