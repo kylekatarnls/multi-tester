@@ -48,17 +48,14 @@ jobs:
         vendor/bin/phpunit --coverage-text --coverage-clover=coverage.xml
         cp coverage.xml clover.xml
 
-    - name: Code Climate Test Reporter
-      uses: aktions/codeclimate-test-reporter@v1
+    - name: Coverage - Qltysh
+      uses: qltysh/qlty-action/coverage@v2
       with:
-        codeclimate-test-reporter-id: ${{ secrets.CC_TEST_REPORTER_ID }}
-        command: after-build -t clover
-      env:
-        ACTIONS_ALLOW_UNSECURE_COMMANDS: true
-      continue-on-error: true
+        token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
+        files: clover.xml
 
-    - name: Upload coverage reports to Codecov
-      uses: codecov/codecov-action@v5.5.1
+    - name: Coverage - Codecov
+      uses: codecov/codecov-action@v5
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
 
