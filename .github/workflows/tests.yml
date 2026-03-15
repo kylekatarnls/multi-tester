@@ -40,7 +40,6 @@ jobs:
     - name: Install dependencies
       if: steps.composer-cache.outputs.cache-hit != 'true'
       run: |
-        ${{ matrix.php >= 8 && 'composer require --no-update phpunit/phpunit:^9.5.10 --no-interaction;' || '' }}
         composer update --prefer-dist --no-interaction ${{ format('--prefer-{0}', matrix.setup) || '' }}
 
     - name: Run test suite
