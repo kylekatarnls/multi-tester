@@ -8,12 +8,13 @@ use MultiTester\MultiTester;
 use MultiTester\MultiTesterException;
 use MultiTester\Project;
 use MultiTester\TestFailedException;
+use ReflectionException;
 use ReflectionMethod;
 
 class ProjectTest extends TestCase
 {
     /**
-     * @throws \MultiTester\MultiTesterException
+     * @throws MultiTesterException
      */
     public function testGetSettings(): void
     {
@@ -44,7 +45,7 @@ class ProjectTest extends TestCase
     }
 
     /**
-     * @throws \MultiTester\MultiTesterException
+     * @throws MultiTesterException
      */
     public function testGetConfig(): void
     {
@@ -60,7 +61,7 @@ class ProjectTest extends TestCase
     }
 
     /**
-     * @throws \MultiTester\MultiTesterException
+     * @throws MultiTesterException
      */
     public function testGetPackage(): void
     {
@@ -76,8 +77,8 @@ class ProjectTest extends TestCase
     }
 
     /**
-     * @throws \MultiTester\MultiTesterException
-     * @throws \ReflectionException
+     * @throws MultiTesterException
+     * @throws ReflectionException
      */
     public function testGetScript(): void
     {
@@ -100,8 +101,8 @@ class ProjectTest extends TestCase
     }
 
     /**
-     * @throws \MultiTester\MultiTesterException
-     * @throws \ReflectionException
+     * @throws MultiTesterException
+     * @throws ReflectionException
      */
     public function testGetTries(): void
     {
@@ -132,7 +133,7 @@ class ProjectTest extends TestCase
     }
 
     /**
-     * @throws \MultiTester\MultiTesterException
+     * @throws MultiTesterException
      */
     public function testClone(): void
     {
@@ -176,7 +177,7 @@ class ProjectTest extends TestCase
     }
 
     /**
-     * @throws \MultiTester\MultiTesterException
+     * @throws MultiTesterException
      */
     public function testInstall(): void
     {
@@ -220,7 +221,7 @@ class ProjectTest extends TestCase
     }
 
     /**
-     * @throws \MultiTester\MultiTesterException
+     * @throws MultiTesterException
      */
     public function testTest(): void
     {
@@ -305,7 +306,7 @@ class ProjectTest extends TestCase
     }
 
     /**
-     * @throws \ReflectionException
+     * @throws ReflectionException
      * @throws MultiTesterException
      */
     public function testFilterVersion(): void
@@ -342,7 +343,7 @@ class ProjectTest extends TestCase
     }
 
     /**
-     * @throws \ReflectionException
+     * @throws ReflectionException
      * @throws MultiTesterException
      */
     public function testSeedSourceSetting(): void
@@ -424,7 +425,7 @@ class ProjectTest extends TestCase
     }
 
     /**
-     * @throws \ReflectionException
+     * @throws ReflectionException
      * @throws MultiTesterException
      */
     public function testSourceOnly(): void
@@ -500,7 +501,7 @@ class ProjectTest extends TestCase
     }
 
     /**
-     * @throws \ReflectionException
+     * @throws ReflectionException
      * @throws MultiTesterException
      */
     public function testCheckSourceSettingNotFound(): void
@@ -522,7 +523,7 @@ class ProjectTest extends TestCase
     }
 
     /**
-     * @throws \ReflectionException
+     * @throws ReflectionException
      * @throws MultiTesterException
      */
     public function testCheckSourceSettingNotSupportedType(): void
@@ -549,7 +550,7 @@ class ProjectTest extends TestCase
     }
 
     /**
-     * @throws \ReflectionException
+     * @throws ReflectionException
      * @throws MultiTesterException
      */
     public function testCheckSourceSettingMalFormed(): void
@@ -575,7 +576,7 @@ class ProjectTest extends TestCase
     }
 
     /**
-     * @throws \ReflectionException
+     * @throws ReflectionException
      * @throws MultiTesterException
      */
     public function testSourceOnlyWithNonGitHubRepository(): void
@@ -605,7 +606,7 @@ class ProjectTest extends TestCase
     }
 
     /**
-     * @throws \ReflectionException
+     * @throws ReflectionException
      * @throws MultiTesterException
      */
     public function testSeedCloneSetting(): void
@@ -639,7 +640,7 @@ class ProjectTest extends TestCase
     }
 
     /**
-     * @throws \ReflectionException
+     * @throws ReflectionException
      * @throws MultiTesterException
      */
     public function testInstallCloneSetting(): void
@@ -780,7 +781,7 @@ class ProjectTest extends TestCase
     }
 
     /**
-     * @throws \ReflectionException
+     * @throws ReflectionException
      * @throws MultiTesterException
      */
     public function testSeedScriptSetting(): void
@@ -850,7 +851,57 @@ class ProjectTest extends TestCase
     }
 
     /**
-     * @throws \ReflectionException
+     * @throws ReflectionException
+     */
+    public function testAllowPlugins(): void
+    {
+        chdir(__DIR__ . '/project2');
+
+        $tester = new MultiTester();
+        $buffer = sys_get_temp_dir() . '/test-' . mt_rand(0, 99999);
+        $tester->setProcStreams([
+            ['file', 'php://stdin', 'r'],
+            ['file', $buffer, 'a'],
+            ['file', $buffer, 'a'],
+        ]);
+        $config = new Config($tester, [__DIR__ . '/../bin/multi-tester']);
+        $project = new Project('pug-php/pug', $config, []);
+
+        chdir(sys_get_temp_dir());
+        $dir = 'multi-tester-' . mt_rand(0, 999999);
+        $projectDir = 'vendor/my-org/other-project';
+        mkdir("$dir/$projectDir", 0777, true);
+        chdir($dir);
+        self::writeContent('composer.json', '{}');
+
+        $this->assertDirectoryExists($projectDir);
+
+        $allowPlugins = new ReflectionMethod($project, 'allowPlugins');
+
+        if (PHP_VERSION_ID < 80100) {
+            $allowPlugins->setAccessible(true);
+        }
+
+        $allowPlugins->invoke($project, ['allow-plugins' => 'foo/bar']);
+        $allowPlugins->invoke($project, ['allow-plugins' => ['aa/bb', 'cc/dd']]);
+        $output = file_get_contents($buffer);
+
+        $this->assertStringContainsString(
+            'composer config --no-plugins allow-plugins.foo/bar true',
+            $output
+        );
+        $this->assertStringContainsString(
+            'composer config --no-plugins allow-plugins.aa/bb true',
+            $output
+        );
+        $this->assertStringContainsString(
+            'composer config --no-plugins allow-plugins.cc/dd true',
+            $output
+        );
+    }
+
+    /**
+     * @throws ReflectionException
      * @throws MultiTesterException
      */
     public function testRemoveReplacedPackages(): void
@@ -879,6 +930,12 @@ class ProjectTest extends TestCase
         if (PHP_VERSION_ID < 80100) {
             $removeReplacedPackages->setAccessible(true);
         }
+
+        $removeReplacedPackages->invoke($project, ['replace' => 'custom replace command']);
+
+        $this->assertStringContainsString('custom replace command', file_get_contents($buffer));
+        $this->assertDirectoryExists($projectDir);
+
         $removeReplacedPackages->invoke($project, []);
 
         $this->assertDirectoryDoesNotExist($projectDir);
