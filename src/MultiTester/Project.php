@@ -324,6 +324,8 @@ class Project
         $tester->clearTravisSettingsCache();
         $tester->clearGithubSettingsCache();
 
+        $this->allowPlugins($settings);
+
         $this->removeReplacedPackages($settings);
 
         $this->seedInstallSetting($settings);
@@ -376,5 +378,24 @@ class Project
         $tester->framedInfo("Testing $package");
 
         return $this->tryExec($tester, $settings, $package);
+    }
+
+    private function allowPlugins(array $settings): void
+    {
+        if (!isset($settings['allow-plugins'])) {
+            return;
+        }
+
+        $tester = $this->config->getTester();
+
+        $plugins = (array) $settings['allow-plugins'];
+
+        foreach ($plugins as $plugin) {
+            $tester->exec(
+                $this->getComposerProgram($settings) .
+                " config --no-plugins allow-plugins.$plugin true" .
+                ($this->config->quiet ? ' --quiet' : '')
+            );
+        }
     }
 }
