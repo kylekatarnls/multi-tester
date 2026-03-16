@@ -41,13 +41,49 @@ class Project
         return $this->exec();
     }
 
-    public function removeReplacedPackages()
+    public function removeReplacedPackages(array $settings)
     {
-        $replace = (array) ($this->config->data['replace'] ?? []);
+        $tester = $this->config->getTester();
 
-        foreach ($replace as $package => $version) {
+        if (isset($settings['replace'])) {
+            $tester->exec($settings['replace']);
+
+            return;
+        }
+
+        $replace = array_keys((array) ($this->config->data['replace'] ?? []));
+
+        if ($replace === []) {
+            return;
+        }
+
+        foreach ($replace as $package) {
             (new Directory('vendor/' . $package, $this->config->executor))->remove();
         }
+
+        // Remove in "require"
+        $tester->exec(
+            $this->getComposerProgram($settings) .
+            ' remove --no-interaction --no-update ' .
+            implode(' ', $replace) .
+            ($this->config->quiet ? ' --quiet' : '')
+        );
+
+        // Remove in "require-dev"
+        $tester->exec(
+            $this->getComposerProgram($settings) .
+            ' remove --dev --no-interaction --no-update ' .
+            implode(' ', $replace) .
+            ($this->config->quiet ? ' --quiet' : '')
+        );
+
+        // Replace with current package
+        $tester->exec(
+            $this->getComposerProgram($settings) .
+            ' require --no-interaction --no-update ' .
+            $this->config->packageName .
+            ($this->config->quiet ? ' --quiet' : '')
+        );
     }
 
     protected function getScript($script): array
@@ -288,6 +324,10 @@ class Project
         $tester->clearTravisSettingsCache();
         $tester->clearGithubSettingsCache();
 
+        $this->allowPlugins($settings);
+
+        $this->removeReplacedPackages($settings);
+
         $this->seedInstallSetting($settings);
 
         if (!$config->quiet) {
@@ -326,9 +366,10 @@ class Project
         $config = $this->getConfig();
         $tester = $config->getTester();
 
-        $this->removeReplacedPackages();
-
-        (new Directory($config->projectDirectory, $this->config->executor))->copy('vendor/' . $config->packageName, ['.git', 'vendor']);
+        (new Directory($config->projectDirectory, $this->config->executor))->copy(
+            'vendor/' . $config->packageName,
+            ['.git', 'vendor']
+        );
 
         $this->autoload();
 
@@ -337,5 +378,24 @@ class Project
         $tester->framedInfo("Testing $package");
 
         return $this->tryExec($tester, $settings, $package);
+    }
+
+    private function allowPlugins(array $settings): void
+    {
+        if (!isset($settings['allow-plugins'])) {
+            return;
+        }
+
+        $tester = $this->config->getTester();
+
+        $plugins = (array) $settings['allow-plugins'];
+
+        foreach ($plugins as $plugin) {
+            $tester->exec(
+                $this->getComposerProgram($settings) .
+                " config --no-plugins allow-plugins.$plugin true" .
+                ($this->config->quiet ? ' --quiet' : '')
+            );
+        }
     }
 }
