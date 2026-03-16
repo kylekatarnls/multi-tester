@@ -879,7 +879,7 @@ class ProjectTest extends TestCase
         if (PHP_VERSION_ID < 80100) {
             $removeReplacedPackages->setAccessible(true);
         }
-        $removeReplacedPackages->invoke($project);
+        $removeReplacedPackages->invoke($project, []);
 
         $this->assertDirectoryDoesNotExist($projectDir);
 
@@ -903,7 +903,7 @@ class ProjectTest extends TestCase
             $removeReplacedPackages->setAccessible(true);
         }
 
-        $this->assertNull($removeReplacedPackages->invoke($project));
+        $this->assertNull($removeReplacedPackages->invoke($project, []));
     }
 
     private static function writeContent(string $file, string $data): void
