@@ -47,6 +47,8 @@ jobs:
       run: |
         vendor/bin/phpunit --coverage-text --coverage-clover=coverage.xml
         cp coverage.xml clover.xml
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Coverage - Qltysh
       uses: qltysh/qlty-action/coverage@v2

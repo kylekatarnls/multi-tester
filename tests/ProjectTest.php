@@ -346,6 +346,34 @@ class ProjectTest extends TestCase
      * @throws ReflectionException
      * @throws MultiTesterException
      */
+    public function testGetRepositoryUrl(): void
+    {
+        chdir(__DIR__ . '/project');
+
+        $config = new Config(new MultiTester(), [__DIR__ . '/../bin/multi-tester']);
+        $project = new Project('pug/pug', $config, null);
+        $getRepositoryUrl = new ReflectionMethod($project, 'getRepositoryUrl');
+        if (PHP_VERSION_ID < 80100) {
+            $getRepositoryUrl->setAccessible(true);
+        }
+
+        $this->assertSame([
+            'type' => 'git',
+            'url'  => 'https://github.com/kylekatarnls/pug3',
+        ], $getRepositoryUrl->invoke($project, ['repository_url' => 'https://github.com/kylekatarnls/pug3']));
+        $this->assertSame([
+            'type' => 'git',
+            'url'  => 'https://github.com/kylekatarnls/pug3',
+        ], $getRepositoryUrl->invoke($project, new \ArrayObject(['repository_url' => 'https://github.com/kylekatarnls/pug3'])));
+        $this->assertNull($getRepositoryUrl->invoke($project, ['name' => 'pug/pug']));
+        $this->assertNull($getRepositoryUrl->invoke($project, []));
+        $this->assertNull($getRepositoryUrl->invoke($project, null));
+    }
+
+    /**
+     * @throws ReflectionException
+     * @throws MultiTesterException
+     */
     public function testSeedSourceSetting(): void
     {
         chdir(__DIR__ . '/project');
@@ -435,6 +463,7 @@ class ProjectTest extends TestCase
         $tester = new MultiTester();
         $config = new Config($tester, [__DIR__ . '/../bin/multi-tester']);
         $config->executor = function (string $url) {
+            $url = self::withoutGitHubToken($url);
             $getUrl = function (string $url): string {
                 return 'curl -s -H "Accept: application/vnd.github.antiope-preview+json" ' .
                     "https://api.github.com/repos/pug-php/pug/commits$url";
@@ -629,7 +658,9 @@ class ProjectTest extends TestCase
         $this->assertSame(['foobar'], $settings['clone']);
 
         $settings = [];
-        $seedCloneSetting->invokeArgs($project, [&$settings]);
+        $this->withRemoteApi('GitHub API', static function () use ($seedCloneSetting, $project, &$settings) {
+            $seedCloneSetting->invokeArgs($project, [&$settings]);
+        });
 
         $clone = $settings['clone'];
 

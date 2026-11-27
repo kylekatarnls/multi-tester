@@ -49,10 +49,30 @@ class GitHub
         return json_decode($this->getCurl($url), true);
     }
 
+    /**
+     * @throws MultiTesterException
+     */
+    private function getJSONArray(string $url, ?string $key = null): array
+    {
+        $data = $this->getJSON($url);
+        $list = $key === null ? $data : ($data[$key] ?? null);
+
+        if (!is_array($list) || ($key === null && isset($data['message']))) {
+            throw new MultiTesterException(
+                "Unexpected response from https://api.github.com/repos/{$this->repo}/commits$url" .
+                (is_array($data) && isset($data['message']) ? ': ' . $data['message'] : '.')
+            );
+        }
+
+        return $list;
+    }
+
+    /**
+     * @throws MultiTesterException
+     */
     private function isSuccessful(string $sha): bool
     {
-        $data = $this->getJSON("/$sha/check-suites");
-        $checks = array_filter($data['check_suites'], function ($status) {
+        $checks = array_filter($this->getJSONArray("/$sha/check-suites", 'check_suites'), function ($status) {
             return $status['status'] !== 'queued';
         });
 
@@ -65,11 +85,16 @@ class GitHub
         return true;
     }
 
+    /**
+     * @throws MultiTesterException
+     */
     public function getFirstSuccessfulCommit(?string $branch = null, int $limit = 30): string
     {
-        $commits = array_slice($this->getJSON($branch ? "?sha=$branch" : ''), 0, $limit);
+        $commits = array_slice($this->getJSONArray($branch ? "?sha=$branch" : ''), 0, $limit);
 
-        foreach ($commits as ['sha' => $sha]) {
+        foreach ($commits as $commit) {
+            $sha = $commit['sha'] ?? null;
+
             if ($sha && $this->isSuccessful($sha)) {
                 return $sha;
             }

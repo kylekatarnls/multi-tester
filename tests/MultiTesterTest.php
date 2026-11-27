@@ -290,6 +290,10 @@ class MultiTesterTest extends TestCase
 
         $package = $method->invoke($tester, 'pug/pug', 'packagist1, libraries.io');
 
+        if ($package === null) {
+            $this->skipIfUnavailable('libraries.io API', 'https://libraries.io/api/Packagist/' . urlencode('pug/pug'));
+        }
+
         $this->assertIsArray($package);
 
         $this->assertSame('pug/pug', $package['0.2.0']['name'] ?? null);
@@ -313,6 +317,54 @@ class MultiTesterTest extends TestCase
             'type' => 'git',
             'url'  => 'https://github.com/kylekatarnls/pug3',
         ], $source);
+    }
+
+    /**
+     * @throws \ReflectionException
+     */
+    public function testGroupByVersion(): void
+    {
+        $finder = new SourceFinder('.');
+        $method = new ReflectionMethod($finder, 'groupByVersion');
+        if (PHP_VERSION_ID < 80100) {
+            $method->setAccessible(true);
+        }
+
+        $this->assertNull($method->invoke($finder, null));
+
+        // libraries.io format: package data with a "versions" list using "number",
+        // package-level data is expanded into every version
+        $this->assertSame([
+            '0.1.0' => [
+                'name'           => 'pug/pug',
+                'repository_url' => 'https://github.com/kylekatarnls/pug3',
+                'number'         => '0.1.0',
+                'published_at'   => '2017-10-01T00:00:00.000Z',
+            ],
+            '0.2.0' => [
+                'name'           => 'pug/pug',
+                'repository_url' => 'https://github.com/kylekatarnls/pug3',
+                'number'         => '0.2.0',
+                'published_at'   => '2017-10-10T19:07:02.000Z',
+            ],
+        ], $method->invoke($finder, [
+            'name'           => 'pug/pug',
+            'repository_url' => 'https://github.com/kylekatarnls/pug3',
+            'versions'       => [
+                ['number' => '0.1.0', 'published_at' => '2017-10-01T00:00:00.000Z'],
+                ['number' => '0.2.0', 'published_at' => '2017-10-10T19:07:02.000Z'],
+            ],
+        ]));
+
+        // Packagist p2 format: minified list using "version", entries without version are ignored
+        $this->assertSame([
+            '2.0.0' => ['name' => 'foo/bar', 'version' => '2.0.0'],
+            '1.0.0' => ['name' => 'foo/bar', 'version' => '1.0.0'],
+        ], $method->invoke($finder, [
+            ['name' => 'foo/bar', 'version' => '2.0.0'],
+            ['version' => '1.0.0'],
+            ['version' => '__unset'],
+        ]));
     }
 
     /**
