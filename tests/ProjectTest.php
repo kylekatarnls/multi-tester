@@ -346,6 +346,34 @@ class ProjectTest extends TestCase
      * @throws ReflectionException
      * @throws MultiTesterException
      */
+    public function testGetRepositoryUrl(): void
+    {
+        chdir(__DIR__ . '/project');
+
+        $config = new Config(new MultiTester(), [__DIR__ . '/../bin/multi-tester']);
+        $project = new Project('pug/pug', $config, null);
+        $getRepositoryUrl = new ReflectionMethod($project, 'getRepositoryUrl');
+        if (PHP_VERSION_ID < 80100) {
+            $getRepositoryUrl->setAccessible(true);
+        }
+
+        $this->assertSame([
+            'type' => 'git',
+            'url'  => 'https://github.com/kylekatarnls/pug3',
+        ], $getRepositoryUrl->invoke($project, ['repository_url' => 'https://github.com/kylekatarnls/pug3']));
+        $this->assertSame([
+            'type' => 'git',
+            'url'  => 'https://github.com/kylekatarnls/pug3',
+        ], $getRepositoryUrl->invoke($project, new \ArrayObject(['repository_url' => 'https://github.com/kylekatarnls/pug3'])));
+        $this->assertNull($getRepositoryUrl->invoke($project, ['name' => 'pug/pug']));
+        $this->assertNull($getRepositoryUrl->invoke($project, []));
+        $this->assertNull($getRepositoryUrl->invoke($project, null));
+    }
+
+    /**
+     * @throws ReflectionException
+     * @throws MultiTesterException
+     */
     public function testSeedSourceSetting(): void
     {
         chdir(__DIR__ . '/project');
