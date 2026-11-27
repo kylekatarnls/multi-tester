@@ -44,3 +44,5 @@ jobs:
 
     - name: Run test suite
       run: vendor/bin/phpunit --no-coverage --verbose
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

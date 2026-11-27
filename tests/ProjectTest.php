@@ -629,7 +629,9 @@ class ProjectTest extends TestCase
         $this->assertSame(['foobar'], $settings['clone']);
 
         $settings = [];
-        $seedCloneSetting->invokeArgs($project, [&$settings]);
+        $this->withRemoteApi('GitHub API', static function () use ($seedCloneSetting, $project, &$settings) {
+            $seedCloneSetting->invokeArgs($project, [&$settings]);
+        });
 
         $clone = $settings['clone'];
 

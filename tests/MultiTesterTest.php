@@ -290,6 +290,10 @@ class MultiTesterTest extends TestCase
 
         $package = $method->invoke($tester, 'pug/pug', 'packagist1, libraries.io');
 
+        if ($package === null) {
+            $this->skipIfUnavailable('libraries.io API', 'https://libraries.io/api/Packagist/' . urlencode('pug/pug'));
+        }
+
         $this->assertIsArray($package);
 
         $this->assertSame('pug/pug', $package['0.2.0']['name'] ?? null);
