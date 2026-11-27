@@ -309,6 +309,7 @@ class GitHubTest extends TestCase
 
         $gitHub = new GitHub('vendor/library', function (string $url) {
             $url = self::withoutGitHubToken($url);
+
             return substr($url, -13) === '/check-suites' ? '"not an array"' : json_encode([['sha' => 'a12']]);
         });
         $gitHub->getFirstSuccessfulCommit();
