@@ -21,7 +21,7 @@ abstract class TestCase extends PHPUnitTestCase
         try {
             return $callback();
         } catch (MultiTesterException $exception) {
-            if (preg_match('/rate limit|Fetching .+ failed/i', $exception->getMessage())) {
+            if (preg_match('/rate limit|bad credentials|Fetching .+ failed/i', $exception->getMessage())) {
                 $this->markTestSkipped("$api is not available: " . $exception->getMessage());
             }
 
@@ -29,6 +29,9 @@ abstract class TestCase extends PHPUnitTestCase
         }
     }
 
+    /**
+     * Skip the test unless the given URL responds successfully (rate limit, auth wall, outage, no network...).
+     */
     protected function skipIfUnavailable(string $api, string $url): void
     {
         $context = stream_context_create(['http' => ['ignore_errors' => true, 'timeout' => 10]]);
@@ -37,9 +40,18 @@ abstract class TestCase extends PHPUnitTestCase
             ? (int) $match[1]
             : 0;
 
-        if ($status === 0 || $status === 429 || $status >= 500) {
+        if ($status !== 200) {
             $this->markTestSkipped("$api is not available (HTTP status: $status).");
         }
+    }
+
+    /**
+     * Remove the optional GITHUB_TOKEN authorization header so mocked commands
+     * are the same whether a token is set in the environment or not.
+     */
+    protected static function withoutGitHubToken(string $command): string
+    {
+        return preg_replace('/-H "Authorization: token [^"]*" /', '', $command);
     }
 
     public static function assertFileDoesNotExist(string $filename, string $message = ''): void

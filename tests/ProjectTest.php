@@ -435,6 +435,7 @@ class ProjectTest extends TestCase
         $tester = new MultiTester();
         $config = new Config($tester, [__DIR__ . '/../bin/multi-tester']);
         $config->executor = function (string $url) {
+            $url = self::withoutGitHubToken($url);
             $getUrl = function (string $url): string {
                 return 'curl -s -H "Accept: application/vnd.github.antiope-preview+json" ' .
                     "https://api.github.com/repos/pug-php/pug/commits$url";

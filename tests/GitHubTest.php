@@ -18,7 +18,7 @@ class GitHubTest extends TestCase
     {
         $calls = [];
         $gitHub = new GitHub('vendor/library', function ($command) use (&$calls) {
-            $calls[] = preg_replace('/-H "Authorization: token [^"]*"/', '', $command);
+            $calls[] = self::withoutGitHubToken($command);
 
             return '[]';
         });
@@ -57,6 +57,7 @@ class GitHubTest extends TestCase
     public function testIsSuccessful(): void
     {
         $gitHub = new GitHub('vendor/library', function (string $url) {
+            $url = self::withoutGitHubToken($url);
             $getUrl = function (string $sha): string {
                 return 'curl -s -H "Accept: application/vnd.github.antiope-preview+json" ' .
                     "https://api.github.com/repos/vendor/library/commits/$sha/check-suites";
@@ -101,6 +102,7 @@ class GitHubTest extends TestCase
     public function testGetFirstSuccessfulCommit(): void
     {
         $gitHub = new GitHub('vendor/library', function (string $url) {
+            $url = self::withoutGitHubToken($url);
             $getUrl = function (string $url): string {
                 return 'curl -s -H "Accept: application/vnd.github.antiope-preview+json" ' .
                     "https://api.github.com/repos/vendor/library/commits$url";
@@ -157,6 +159,7 @@ class GitHubTest extends TestCase
         $this->expectExceptionMessage('No successful commit found in the 2 last commits of vendor/library.');
 
         $gitHub = new GitHub('vendor/library', function (string $url) {
+            $url = self::withoutGitHubToken($url);
             $getUrl = function (string $url): string {
                 return 'curl -s -H "Accept: application/vnd.github.antiope-preview+json" ' .
                     "https://api.github.com/repos/vendor/library/commits$url";
@@ -230,6 +233,7 @@ class GitHubTest extends TestCase
         $this->expectExceptionMessage('No successful commit found in the 2 last commits on master of vendor/library.');
 
         $gitHub = new GitHub('vendor/library', function (string $url) {
+            $url = self::withoutGitHubToken($url);
             $getUrl = function (string $url): string {
                 return 'curl -s -H "Accept: application/vnd.github.antiope-preview+json" ' .
                     "https://api.github.com/repos/vendor/library/commits$url";
@@ -304,6 +308,7 @@ class GitHubTest extends TestCase
         );
 
         $gitHub = new GitHub('vendor/library', function (string $url) {
+            $url = self::withoutGitHubToken($url);
             return substr($url, -13) === '/check-suites' ? '"not an array"' : json_encode([['sha' => 'a12']]);
         });
         $gitHub->getFirstSuccessfulCommit();
